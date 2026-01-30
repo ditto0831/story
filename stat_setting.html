@@ -2,91 +2,330 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>스탯 설정</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
-        :root { --bg-color: #121212; --bg-secondary: #1e1e1e; --text-color: #ffffff; --accent-color: #ff4747; --border-color: #333; }
-        * { margin:0; padding:0; box-sizing:border-box; font-family:'Pretendard', sans-serif; }
-        body { background:var(--bg-color); color:var(--text-color); line-height:1.5; height:100vh; display:flex; flex-direction:column; }
-        .header-nav { background:var(--bg-secondary); padding:10px 20px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; }
-        .container { display:flex; flex:1; overflow:hidden; }
-        .left-panel { flex:1; padding:20px; border-right:1px solid var(--border-color); overflow-y:auto; max-width:50%; }
-        .right-panel { flex:1; background:#000; }
-        .input-box { width:100%; padding:10px; background:var(--bg-secondary); border:1px solid var(--border-color); color:#fff; border-radius:6px; margin-bottom:10px; }
-        .bottom-nav { padding:15px 20px; border-top:1px solid var(--border-color); background:var(--bg-secondary); display:flex; justify-content:space-between; }
-        .btn-prev { background:#333; color:white; padding:10px 20px; border:none; border-radius:6px; cursor:pointer; }
-        .btn-next { background:var(--accent-color); color:white; padding:10px 30px; border:none; border-radius:6px; cursor:pointer; }
-        .stat-card { background:#252525; padding:15px; border-radius:8px; margin-bottom:15px; border:1px solid #3d3d3d; }
+        /* --- 공통 스타일 --- */
+        :root {
+            --bg-color: #121212;
+            --bg-secondary: #1e1e1e;
+            --text-color: #ffffff;
+            --text-muted: #a0a0a0;
+            --accent-color: #ff4747;
+            --border-color: #333333;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); line-height: 1.5; height: 100vh; display: flex; flex-direction: column; }
+
+        /* 상단 네비게이션 */
+        .header-nav {
+            background: var(--bg-secondary);
+            padding: 10px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: space-between; font-size: 0.9rem;
+        }
+        .nav-left { display: flex; align-items: center; }
+        .step-list { display: flex; gap: 20px; list-style: none; margin-left: 20px; }
+        .step-item { color: var(--text-muted); cursor: pointer; position: relative; }
+        .step-item.active { color: var(--accent-color); font-weight: bold; }
+        .step-item.active::after { content:''; position:absolute; bottom:-14px; left:0; width:100%; height:2px; background:var(--accent-color); }
+
+        /* 파일 조작 버튼 */
+        .file-actions { display: flex; gap: 10px; }
+        .btn-file {
+            padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; cursor: pointer; border: 1px solid #444; background: #333; color: white;
+        }
+        .btn-file:hover { background: #444; }
+
+        .container { display: flex; flex: 1; overflow: hidden; }
+        .left-panel { flex: 1; padding: 20px; overflow-y: auto; border-right: 1px solid var(--border-color); max-width: 50%; }
+
+        /* 폼 요소 공통 */
+        .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .label-title { font-weight: bold; font-size: 0.95rem; }
+        .label-title span { color: var(--accent-color); }
+        .label-desc { font-size: 0.8rem; color: #888; margin-bottom: 8px; display: block; }
+        
+        .btn-small { background: #333; color: #fff; border: 1px solid #444; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; }
+        .btn-small.red-outline { border: 1px solid var(--accent-color); color: var(--accent-color); background: transparent; }
+
+        .input-box, .textarea-box { width: 100%; background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-color); padding: 12px; border-radius: 6px; font-size: 0.95rem; }
+        
+        /* 탭 버튼 */
+        .pill-btn {
+            display: inline-block; padding: 6px 16px; background: #fff; color: #000; border-radius: 20px; 
+            font-size: 0.9rem; font-weight: bold; margin-bottom: 20px; cursor: pointer;
+        }
+
+        /* 스탯 카드 박스 */
+        .stat-card {
+            background: #252525;
+            border: 1px solid #3d3d3d;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .stat-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+            padding-bottom: 10px; border-bottom: 1px solid #3d3d3d;
+        }
+        .stat-title { font-weight: bold; font-size: 1rem; }
+        .stat-icons button { background: none; border: none; color: #888; cursor: pointer; margin-left: 10px; font-size: 1rem; }
+        .stat-icons button:hover { color: #fff; }
+
+        /* 3분할 입력 필드 */
+        .input-triple-row { display: flex; gap: 10px; }
+        .input-triple-row input { flex: 1; text-align: center; }
+
+        /* 스탯 추가 버튼 */
+        .btn-add-stat {
+            width: 100%; padding: 15px;
+            background: transparent; border: 1px solid var(--border-color); color: var(--text-muted);
+            border-radius: 6px; cursor: pointer; font-size: 0.95rem; transition: 0.2s;
+        }
+        .btn-add-stat:hover { background: #333; color: #fff; border-color: #555; }
+        .form-section { margin-bottom: 25px; }
+
+        /* --- 오른쪽 패널 --- */
+        .right-panel { flex: 1; background-color: #000; display: flex; flex-direction: column; position: relative; }
+        .preview-header { padding: 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; background: rgba(30, 30, 30, 0.8); }
+        .chat-area { flex: 1; display: flex; align-items: center; justify-content: center; color: #555; font-size: 0.9rem; }
+        .chat-input-area { padding: 20px; }
+        .chat-input-wrapper { background: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 12px; display: flex; align-items: center; justify-content: space-between; }
+        .send-btn { width: 30px; height: 30px; background: #fff; border-radius: 50%; border: none; cursor: pointer; }
+
+        /* 하단바 */
+        .bottom-nav { padding: 15px 20px; border-top: 1px solid var(--border-color); background: var(--bg-secondary); display: flex; justify-content: space-between; }
+        .btn-prev { background: #333; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+        .btn-next { background: var(--accent-color); color: white; border: none; padding: 10px 30px; border-radius: 6px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
+
     <header class="header-nav">
-        <div style="font-weight:bold;">← 스토리 만들기 (스탯 설정)</div>
+        <div class="nav-left">
+            <div style="font-weight:bold; font-size:1.1rem; margin-right:20px;">← 스토리 만들기</div>
+            <ul class="step-list">
+                <li class="step-item" onclick="saveAndGo('index.html')">프로필</li>
+                <li class="step-item" onclick="saveAndGo('story.html')">스토리 설정</li>
+                <li class="step-item" onclick="saveAndGo('start_setting.html')">시작 설정</li>
+                <li class="step-item active">스탯 설정</li>
+                <li class="step-item">미디어</li>
+            </ul>
+        </div>
+        <div class="file-actions">
+            <input type="file" id="jsonFileInput" accept=".json" style="display: none;" onchange="loadJsonFile(this)">
+            <button class="btn-file" onclick="document.getElementById('jsonFileInput').click()">📂 불러오기</button>
+            <button class="btn-file" onclick="saveJsonFile()">💾 저장하기</button>
+        </div>
     </header>
 
     <div class="container">
         <aside class="left-panel">
-            <h3>스탯 설정</h3>
-            <p style="font-size:0.8rem; color:#888; margin-bottom:20px;">예시로 1개의 스탯만 보여집니다.</p>
+            
+            <div style="margin-bottom: 20px;">
+                <h2 style="font-size:1.1rem; margin-bottom:5px;">스탯 설정</h2>
+                <p style="font-size:0.85rem; color:#888;">세계관에 필요한 스탯을 설정해 보세요. (시작 설정 별로 최대 7개)</p>
+            </div>
 
-            <div class="stat-card">
-                <label>스탯 이름</label>
-                <input type="text" id="statName" class="input-box" placeholder="예) 호감도">
-                
-                <label>최소 / 최대 / 기본값</label>
-                <div style="display:flex; gap:5px;">
-                    <input type="number" id="statMin" class="input-box" placeholder="최소">
-                    <input type="number" id="statMax" class="input-box" placeholder="최대">
-                    <input type="number" id="statDefault" class="input-box" placeholder="기본">
+            <div class="pill-btn" id="currentSetName">기본 설정</div>
+
+            <div id="statList">
+                </div>
+
+            <button class="btn-add-stat" onclick="addStatCard()">+ 스탯 추가</button>
+
+        </aside>
+
+        <main class="right-panel">
+            <div class="preview-header">
+                <span style="font-weight:bold;">← 채팅 미리보기</span>
+                <div style="background:#333; padding:5px 10px; border-radius:20px; font-size:0.8rem;">
+                    <span style="color:purple;">●</span> 슈퍼챗 2.0 ∨
                 </div>
             </div>
-        </aside>
-        <main class="right-panel"></main>
+            <div class="chat-area">
+                <div style="text-align:center;">
+                    <p style="margin-bottom:10px;">이 대화는 AI로 생성된 가상의 이야기입니다</p>
+                    <div style="background:#1e1e1e; padding:15px; border-radius:8px; width:300px; margin:0 auto; text-align:left;">
+                        <span style="display:inline-block; width:15px; height:15px; background:#555; border-radius:50%; margin-right:10px;"></span>
+                        <span id="previewName" style="color:#888;">스토리 이름</span>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <div class="chat-input-wrapper">
+                    <div style="color:#666; font-size:0.9rem;">[이름, 캐릭터 설정 및 정보, 첫 메시지]를 입력해주세요<br><span style="font-size:1.2rem;">❄️</span></div>
+                    <button class="send-btn">▶</button>
+                </div>
+            </div>
+        </main>
     </div>
 
     <footer class="bottom-nav">
-        <button class="btn-prev" onclick="goPage('start_setting.html')">이전</button>
-        <button class="btn-next" onclick="goPage('media_setting.html')">다음</button>
+        <button class="btn-prev" onclick="saveAndGo('start_setting.html')">이전</button>
+        <button class="btn-next" onclick="saveAndGo('media_setting.html')">다음</button>
     </footer>
 
     <script>
-        let globalData = {};
+        // 전역 데이터
+        let globalData = {
+            startingSets: [
+                {
+                    name: "기본 설정",
+                    parameters: [] // 스탯 정보는 여기에 저장됨
+                }
+            ]
+        };
+        let currentSetIndex = 0;
+
         window.onload = function() {
-            const saved = localStorage.getItem('storyData');
-            if (saved) {
-                globalData = JSON.parse(saved);
-                loadStat();
+            const savedData = localStorage.getItem('storyData');
+            if (savedData) {
+                globalData = JSON.parse(savedData);
+                if (!globalData.startingSets) globalData.startingSets = [{ name: "기본 설정", parameters: [] }];
+                if (!globalData.startingSets[currentSetIndex].parameters) globalData.startingSets[currentSetIndex].parameters = [];
+                
+                // 미리보기 이름
+                if (globalData.prompt && globalData.prompt.name) {
+                    document.getElementById('previewName').innerText = globalData.prompt.name;
+                }
+                
+                applyDataToForm();
             }
         };
 
-        function loadStat() {
-            // 첫 번째 파라미터가 있으면 불러오기 (예시)
-            if (globalData.prompt && globalData.prompt.parameters && globalData.prompt.parameters.length > 0) {
-                const param = globalData.prompt.parameters[0];
-                document.getElementById('statName').value = param.name || "";
-                document.getElementById('statMin').value = param.min || "";
-                document.getElementById('statMax').value = param.max || "";
-                document.getElementById('statDefault').value = param.defaultValue || "";
+        // 데이터 -> 화면 적용
+        function applyDataToForm() {
+            const currentSet = globalData.startingSets[currentSetIndex];
+            document.getElementById('currentSetName').innerText = currentSet.name || "기본 설정";
+
+            const list = document.getElementById('statList');
+            list.innerHTML = ''; // 초기화
+
+            if (currentSet.parameters && currentSet.parameters.length > 0) {
+                currentSet.parameters.forEach((stat, index) => {
+                    addStatCard(stat, index + 1);
+                });
             }
         }
 
-        function saveData() {
-            if (!globalData.prompt) globalData.prompt = {};
-            // 파라미터 배열이 없으면 생성
-            if (!globalData.prompt.parameters) globalData.prompt.parameters = [];
-            
-            // 0번째 요소에 덮어쓰기 (단순화)
-            globalData.prompt.parameters[0] = {
-                name: document.getElementById('statName').value,
-                min: Number(document.getElementById('statMin').value),
-                max: Number(document.getElementById('statMax').value),
-                defaultValue: Number(document.getElementById('statDefault').value)
-            };
+        // 스탯 카드 추가 함수 (동적 생성)
+        function addStatCard(data = {}, num = 0) {
+            const list = document.getElementById('statList');
+            const index = num || list.children.length + 1; // 번호 매기기
+
+            // 데이터 기본값 처리
+            const name = data.name || "";
+            const min = data.min !== undefined ? data.min : "";
+            const max = data.max !== undefined ? data.max : "";
+            const def = data.defaultValue !== undefined ? data.defaultValue : ""; // default 예약어 피함
+            const unit = data.unit || "";
+            const desc = data.description || "";
+
+            const div = document.createElement('div');
+            div.className = 'stat-card';
+            div.innerHTML = `
+                <div class="stat-header">
+                    <span class="stat-title">| 스탯 ${index}</span>
+                    <div class="stat-icons">
+                        <button title="삭제" onclick="removeStatCard(this)">🗑️</button>
+                        <button title="접기">^</button>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <div class="label-row">
+                        <span class="label-title">스탯 이름 <span>*</span></span>
+                    </div>
+                    <input type="text" class="input-box stat-name" value="${name}" placeholder="예) 호감도, 체력">
+                </div>
+
+                <div class="form-section">
+                    <div class="label-row"><span class="label-title">최소 / 최대 / 기본값 설정 <span>*</span></span></div>
+                    <div class="input-triple-row">
+                        <input type="number" class="input-box stat-min" value="${min}" placeholder="최소">
+                        <input type="number" class="input-box stat-max" value="${max}" placeholder="최대">
+                        <input type="number" class="input-box stat-def" value="${def}" placeholder="기본">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="label-row"><span class="label-title">스탯 단위 설정</span></div>
+                    <input type="text" class="input-box stat-unit" value="${unit}" placeholder="예) %, 개">
+                </div>
+
+                <div class="form-section" style="margin-bottom: 0;">
+                    <div class="label-row">
+                        <span class="label-title">스탯 설명 <span>*</span></span>
+                    </div>
+                    <textarea class="textarea-box stat-desc" style="height:100px;" placeholder="AI가 스탯을 이해하도록 설명을 작성해주세요">${desc}</textarea>
+                </div>
+            `;
+            list.appendChild(div);
+        }
+
+        // 스탯 카드 삭제
+        function removeStatCard(btn) {
+            btn.closest('.stat-card').remove();
+        }
+
+        // 화면 -> 데이터 저장
+        function updateGlobalDataFromForm() {
+            if (!globalData.startingSets) globalData.startingSets = [];
+            if (!globalData.startingSets[currentSetIndex]) globalData.startingSets[currentSetIndex] = {};
+
+            const cards = document.querySelectorAll('.stat-card');
+            const newParams = [];
+
+            cards.forEach(card => {
+                newParams.push({
+                    name: card.querySelector('.stat-name').value,
+                    min: card.querySelector('.stat-min').value,
+                    max: card.querySelector('.stat-max').value,
+                    defaultValue: card.querySelector('.stat-def').value,
+                    unit: card.querySelector('.stat-unit').value,
+                    description: card.querySelector('.stat-desc').value
+                });
+            });
+
+            globalData.startingSets[currentSetIndex].parameters = newParams;
             localStorage.setItem('storyData', JSON.stringify(globalData));
         }
 
-        function goPage(url) {
-            saveData();
+        // 공통 파일 로드/저장/이동 함수
+        function loadJsonFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const json = JSON.parse(e.target.result);
+                    globalData = { ...globalData, ...json };
+                    localStorage.setItem('storyData', JSON.stringify(globalData));
+                    applyDataToForm();
+                    alert('데이터를 불러왔습니다.');
+                } catch (err) { alert('파일 오류'); }
+            };
+            reader.readAsText(file);
+        }
+
+        function saveJsonFile() {
+            updateGlobalDataFromForm();
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(globalData, null, 2));
+            const node = document.createElement('a');
+            node.setAttribute("href", dataStr);
+            node.setAttribute("download", "story_data.json");
+            document.body.appendChild(node);
+            node.click();
+            node.remove();
+        }
+
+        function saveAndGo(url) {
+            updateGlobalDataFromForm();
             location.href = url;
         }
     </script>
