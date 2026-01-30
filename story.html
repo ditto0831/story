@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>스토리 설정</title>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <style>
+        /* (기존 CSS 스타일 동일 - 생략 가능하지만 복사 편의를 위해 유지) */
+        :root { --bg-color: #121212; --bg-secondary: #1e1e1e; --text-color: #ffffff; --text-muted: #a0a0a0; --accent-color: #ff4747; --border-color: #333333; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); line-height: 1.5; height: 100vh; display: flex; flex-direction: column; }
+        .header-nav { background: var(--bg-secondary); padding: 10px 20px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; font-size: 0.9rem; justify-content: space-between; }
+        .nav-left { display: flex; align-items: center; }
+        .step-list { display: flex; gap: 20px; list-style: none; margin-left: 20px; }
+        .step-item { color: var(--text-muted); cursor: pointer; position: relative; }
+        .step-item.active { color: var(--accent-color); font-weight: bold; }
+        .step-item.active::after { content:''; position:absolute; bottom:-14px; left:0; width:100%; height:2px; background:var(--accent-color); }
+        .container { display: flex; flex: 1; overflow: hidden; }
+        .left-panel { flex: 1; padding: 20px; overflow-y: auto; border-right: 1px solid var(--border-color); max-width: 50%; }
+        .section-box { margin-bottom: 30px; }
+        .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .label-title { font-weight: bold; font-size: 1rem; }
+        .label-title span { color: var(--accent-color); }
+        .btn-small { background: #333; color: #fff; border: 1px solid #444; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; }
+        .btn-small.red-outline { border: 1px solid var(--accent-color); color: var(--accent-color); background: transparent; }
+        .input-box, .textarea-box { width: 100%; background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-color); padding: 12px; border-radius: 6px; font-size: 0.95rem; }
+        .textarea-box { height: 300px; resize: vertical; } /* 높이 조정 */
+        .right-panel { flex: 1; background-color: #000; display: flex; flex-direction: column; position: relative; }
+        .preview-header { padding: 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; background: rgba(30, 30, 30, 0.8); }
+        .chat-area { flex: 1; display: flex; align-items: center; justify-content: center; color: #555; font-size: 0.9rem; }
+        .chat-input-area { padding: 20px; background: transparent; }
+        .chat-input-wrapper { background: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 12px; display: flex; align-items: center; justify-content: space-between; }
+        .send-btn { width: 30px; height: 30px; background: #fff; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .bottom-nav { padding: 15px 20px; border-top: 1px solid var(--border-color); background: var(--bg-secondary); display: flex; justify-content: space-between; }
+        .btn-prev { background: #333; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+        .btn-next { background: var(--accent-color); color: white; border: none; padding: 10px 30px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        
+        /* JSON 저장/불러오기 버튼 스타일 */
+        .header-actions { display: flex; gap: 10px; }
+        .btn-header { padding: 5px 10px; font-size: 0.8rem; background: #333; border: 1px solid #555; color: #ccc; border-radius: 4px; cursor: pointer; }
+        .btn-header:hover { background: #444; color: #fff; }
+    </style>
+</head>
+<body>
+    <header class="header-nav">
+        <div class="nav-left">
+            <div style="font-weight:bold; font-size:1.1rem; margin-right:20px;">← 스토리 만들기</div>
+            <ul class="step-list">
+                <li class="step-item">프로필</li>
+                <li class="step-item active">스토리 설정</li>
+                <li class="step-item">시작 설정</li>
+                <li class="step-item">스탯 설정</li>
+                <li class="step-item">미디어</li>
+            </ul>
+        </div>
+        <div class="header-actions">
+            <button class="btn-header" onclick="saveData()">💾 저장</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <aside class="left-panel">
+            <div class="section-box">
+                <div class="label-row">
+                    <span class="label-title">프롬프트 템플릿 <span>*</span></span>
+                </div>
+                <select id="promptTemplate" class="input-box">
+                    <option value="custom">✨ 제작자 커스텀</option>
+                    <option value="basic">기본 프롬프트</option>
+                </select>
+            </div>
+
+            <div class="section-box">
+                <div class="label-row">
+                    <span class="label-title">스토리 설정 및 정보 <span>*</span></span>
+                    <button class="btn-small red-outline">자동 생성</button>
+                </div>
+                <p style="font-size:0.8rem; color:#888; margin-bottom:10px;">세계관, 설정, 등장인물 외모, 성격, 말투 등 상세 정보를 입력해 주세요</p>
+                <textarea id="customPrompt" class="textarea-box" placeholder="스토리 설정을 입력하세요"></textarea>
+            </div>
+        </aside>
+
+        <main class="right-panel">
+            <div class="preview-header">
+                <span style="font-weight:bold;">채팅 미리보기</span>
+                <div style="background:#333; padding:5px 10px; border-radius:20px; font-size:0.8rem;">● 슈퍼챗 2.0 ∨</div>
+            </div>
+            <div class="chat-area">
+                <p>미리보기 화면입니다.</p>
+            </div>
+        </main>
+    </div>
+
+    <footer class="bottom-nav">
+        <button class="btn-prev" onclick="goPage('index.html')">이전</button>
+        <button class="btn-next" onclick="goPage('start_setting.html')">다음</button>
+    </footer>
+
+    <script>
+        let globalData = {};
+
+        // 페이지 로드 시 데이터 불러오기
+        window.onload = function() {
+            const saved = localStorage.getItem('storyData');
+            if (saved) {
+                globalData = JSON.parse(saved);
+                loadToForm();
+            }
+        };
+
+        function loadToForm() {
+            if (globalData.prompt) {
+                // 커스텀 프롬프트 (story setting)
+                if (globalData.prompt.customPrompt) {
+                    document.getElementById('customPrompt').value = globalData.prompt.customPrompt;
+                }
+                // 템플릿
+                if (globalData.prompt.promptTemplate && globalData.prompt.promptTemplate.template) {
+                    document.getElementById('promptTemplate').value = globalData.prompt.promptTemplate.template;
+                }
+            }
+        }
+
+        function saveData() {
+            if (!globalData.prompt) globalData.prompt = {};
+            
+            globalData.prompt.customPrompt = document.getElementById('customPrompt').value;
+            // 템플릿 값 저장
+            const templateVal = document.getElementById('promptTemplate').value;
+            if(!globalData.prompt.promptTemplate) globalData.prompt.promptTemplate = {};
+            globalData.prompt.promptTemplate.template = templateVal;
+
+            localStorage.setItem('storyData', JSON.stringify(globalData));
+        }
+
+        function goPage(url) {
+            saveData();
+            location.href = url;
+        }
+    </script>
+</body>
+</html>
