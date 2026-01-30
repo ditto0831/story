@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>키워드북 설정</title>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <style>
+        /* --- 공통 스타일 --- */
+        :root {
+            --bg-color: #121212;
+            --bg-secondary: #1e1e1e;
+            --text-color: #ffffff;
+            --text-muted: #a0a0a0;
+            --accent-color: #ff4747;
+            --border-color: #333333;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); line-height: 1.5; height: 100vh; display: flex; flex-direction: column; }
+
+        /* 상단 네비게이션 */
+        .header-nav {
+            background: var(--bg-secondary);
+            padding: 10px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: space-between; font-size: 0.9rem;
+        }
+        .nav-left { display: flex; align-items: center; }
+        .step-list { display: flex; gap: 20px; list-style: none; margin-left: 20px; }
+        .step-item { color: var(--text-muted); cursor: pointer; position: relative; }
+        .step-item.active { color: var(--accent-color); font-weight: bold; }
+        .step-item.active::after { content:''; position:absolute; bottom:-14px; left:0; width:100%; height:2px; background:var(--accent-color); }
+
+        /* 파일 조작 버튼 */
+        .file-actions { display: flex; gap: 10px; }
+        .btn-file {
+            padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; cursor: pointer; border: 1px solid #444; background: #333; color: white;
+        }
+        .btn-file:hover { background: #444; }
+
+        .container { display: flex; flex: 1; overflow: hidden; }
+        .left-panel { flex: 1; padding: 20px; overflow-y: auto; border-right: 1px solid var(--border-color); max-width: 50%; }
+
+        /* 필터 탭 */
+        .filter-tabs { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .filter-pill {
+            padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; cursor: pointer;
+            border: 1px solid #444; background: transparent; color: #ccc; white-space: nowrap;
+        }
+        .filter-pill.active { background: #fff; color: #000; border-color: #fff; font-weight: bold; }
+
+        /* 키워드 노트 카드 */
+        .keyword-card {
+            background: #252525; border: 1px solid #3d3d3d; border-radius: 8px; padding: 20px; margin-bottom: 15px; position: relative;
+        }
+        .drag-handle {
+            position: absolute; left: 8px; top: 20px; color: #555; cursor: grab; font-size: 1.2rem;
+        }
+        
+        .card-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-left: 15px;
+        }
+        .card-title-input {
+            background: transparent; border: none; color: #fff; font-weight: bold; font-size: 1rem; width: 200px;
+        }
+        .card-title-input:focus { border-bottom: 1px solid #666; outline: none; }
+        
+        .card-actions button { background: none; border: none; color: #666; cursor: pointer; margin-left: 8px; font-size: 1rem; }
+        .card-actions button:hover { color: #fff; }
+
+        /* 폼 요소 */
+        .form-section { margin-bottom: 20px; padding-left: 15px; }
+        .label-row { margin-bottom: 8px; font-size: 0.9rem; font-weight: bold; }
+        .label-row span { color: var(--accent-color); }
+        .label-desc { font-size: 0.8rem; color: #888; margin-bottom: 8px; display: block; }
+
+        .input-box, .textarea-box {
+            width: 100%; background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-color); padding: 12px; border-radius: 6px; font-size: 0.95rem;
+        }
+        
+        /* 태그 칩 스타일 */
+        .tag-chip {
+            background: #333; padding: 4px 10px; border-radius: 15px; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 5px; border: 1px solid #444; color: #ccc;
+        }
+
+        /* 추가 버튼 */
+        .add-btn {
+            width: 100%; padding: 15px; background: transparent; border: 1px solid #444; border-radius: 6px; color: var(--text-muted); cursor: pointer; transition: 0.2s;
+        }
+        .add-btn:hover { background: #333; color: #fff; }
+
+        /* --- 오른쪽 패널 --- */
+        .right-panel { flex: 1; background-color: #000; display: flex; flex-direction: column; position: relative; }
+        .preview-header { padding: 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; background: rgba(30, 30, 30, 0.8); }
+        .chat-area { flex: 1; display: flex; align-items: center; justify-content: center; color: #555; font-size: 0.9rem; }
+        .chat-input-area { padding: 20px; }
+        .chat-input-wrapper { background: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 12px; display: flex; align-items: center; justify-content: space-between; }
+        .send-btn { width: 30px; height: 30px; background: #fff; border-radius: 50%; border: none; cursor: pointer; }
+
+        /* 하단바 */
+        .bottom-nav { padding: 15px 20px; border-top: 1px solid var(--border-color); background: var(--bg-secondary); display: flex; justify-content: space-between; }
+        .btn-prev { background: #333; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+        .btn-next { background: var(--accent-color); color: white; border: none; padding: 10px 30px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <header class="header-nav">
+        <div class="nav-left">
+            <div style="font-weight:bold; font-size:1.1rem; margin-right:20px;">← 스토리 만들기</div>
+            <ul class="step-list">
+                <li class="step-item" onclick="saveAndGo('index.html')">프로필</li>
+                <li class="step-item" onclick="saveAndGo('story.html')">스토리 설정</li>
+                <li class="step-item" onclick="saveAndGo('start_setting.html')">시작 설정</li>
+                <li class="step-item" onclick="saveAndGo('stat_setting.html')">스탯 설정</li>
+                <li class="step-item" onclick="saveAndGo('media_setting.html')">미디어</li>
+                <li class="step-item active">키워드북</li>
+                <li class="step-item">엔딩 설정</li>
+            </ul>
+        </div>
+        <div class="file-actions">
+            <input type="file" id="jsonFileInput" accept=".json" style="display: none;" onchange="loadJsonFile(this)">
+            <button class="btn-file" onclick="document.getElementById('jsonFileInput').click()">📂 불러오기</button>
+            <button class="btn-file" onclick="saveJsonFile()">💾 저장하기</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <aside class="left-panel">
+            
+            <h2 style="font-size:1.1rem; font-weight:bold; margin-bottom:5px;">키워드북 <span style="font-size:0.8rem; font-weight:normal; color:#666; margin-left:5px;">?</span></h2>
+            <p style="font-size: 0.85rem; color: #888; margin-bottom: 20px;">
+                스토리의 세계관이나 추가 정보를 저장해두는 기능이에요.<br>
+                사용자 메시지가 특정 키워드를 포함하면, 키워드북에 저장된 정보를 자동으로 불러와요.
+            </p>
+
+            <div class="filter-tabs" id="filterTabs">
+                </div>
+
+            <div id="keywordList"></div>
+
+            <button class="add-btn" onclick="addKeywordCard()">+ 키워드 노트 추가</button>
+
+        </aside>
+
+        <main class="right-panel">
+            <div class="preview-header">
+                <span style="font-weight:bold;">← 채팅 미리보기</span>
+                <div style="background:#333; padding:5px 10px; border-radius:20px; font-size:0.8rem;">
+                    <span style="color:purple;">●</span> 슈퍼챗 2.0 ∨
+                </div>
+            </div>
+            <div class="chat-area">
+                <div style="text-align:center;">
+                    <p style="margin-bottom:10px;">이 대화는 AI로 생성된 가상의 이야기입니다</p>
+                    <div style="background:#1e1e1e; padding:15px; border-radius:8px; width:300px; margin:0 auto; text-align:left;">
+                        <span style="display:inline-block; width:15px; height:15px; background:#555; border-radius:50%; margin-right:10px;"></span>
+                        <span id="previewName" style="color:#888;">스토리 이름</span>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <div class="chat-input-wrapper">
+                    <div style="color:#666; font-size:0.9rem;">[이름, 캐릭터 설정 및 정보, 첫 메시지]를 입력해주세요<br><span style="font-size:1.2rem;">❄️</span></div>
+                    <button class="send-btn">▶</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer class="bottom-nav">
+        <button class="btn-prev" onclick="saveAndGo('media_setting.html')">이전</button>
+        <button class="btn-next" onclick="saveAndGo('ending_setting.html')">다음</button>
+    </footer>
+
+    <script>
+        let globalData = {
+            startingSets: [{ name: "기본 설정", keywordBook: [] }]
+        };
+        let currentFilter = 'all';
+
+        window.onload = function() {
+            const savedData = localStorage.getItem('storyData');
+            if (savedData) {
+                globalData = JSON.parse(savedData);
+                if (!globalData.startingSets) globalData.startingSets = [{ name: "기본 설정", keywordBook: [] }];
+                globalData.startingSets.forEach(set => {
+                    if (!set.keywordBook) set.keywordBook = [];
+                });
+
+                if (globalData.prompt && globalData.prompt.name) {
+                    document.getElementById('previewName').innerText = globalData.prompt.name;
+                }
+                
+                renderTabs();
+                renderKeywords();
+            }
+        };
+
+        // 1. 탭 렌더링
+        function renderTabs() {
+            const container = document.getElementById('filterTabs');
+            let html = `<button class="filter-pill ${currentFilter === 'all' ? 'active' : ''}" onclick="changeFilter('all')">전체 ${countAllKeywords()}</button>`;
+            
+            globalData.startingSets.forEach((set, index) => {
+                const count = set.keywordBook ? set.keywordBook.length : 0;
+                const activeClass = currentFilter === index ? 'active' : '';
+                html += `<button class="filter-pill ${activeClass}" onclick="changeFilter(${index})">${set.name} ${count}</button>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function countAllKeywords() {
+            return globalData.startingSets.reduce((acc, set) => acc + (set.keywordBook ? set.keywordBook.length : 0), 0);
+        }
+
+        function changeFilter(filter) {
+            currentFilter = filter;
+            renderTabs();
+            renderKeywords();
+        }
+
+        // 2. 키워드 카드 렌더링
+        function renderKeywords() {
+            const list = document.getElementById('keywordList');
+            list.innerHTML = '';
+
+            globalData.startingSets.forEach((set, setIndex) => {
+                if (currentFilter !== 'all' && currentFilter !== setIndex) return;
+
+                if (set.keywordBook) {
+                    set.keywordBook.forEach((item, itemIndex) => {
+                        addKeywordCardUI(list, item, setIndex, itemIndex, set.name);
+                    });
+                }
+            });
+        }
+
+        function addKeywordCardUI(container, data, setIndex, itemIndex, setName) {
+            const name = data.name || "새 노트";
+            const prompt = data.prompt || "";
+            // 키워드 배열을 콤마 문자열로 변환
+            const keywordsStr = (data.keywords && Array.isArray(data.keywords)) ? data.keywords.join(', ') : "";
+
+            const div = document.createElement('div');
+            div.className = 'keyword-card';
+            div.dataset.setIndex = setIndex;
+            div.dataset.itemIndex = itemIndex;
+
+            div.innerHTML = `
+                <div class="drag-handle">⋮</div>
+                <div class="card-header">
+                    <input type="text" class="card-title-input kb-name" value="${name}" placeholder="노트 이름">
+                    <div class="card-actions">
+                        <button title="삭제" onclick="removeKeyword(this)">🗑️</button>
+                        <button title="접기">^</button>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="label-row">정보 <span>*</span></div>
+                    <span class="label-desc">스토리가 불러올 추가 정보를 입력해 주세요</span>
+                    <textarea class="textarea-box kb-prompt" style="height:100px;" placeholder="예) 메이브의 지팡이는...">${prompt}</textarea>
+                </div>
+
+                <div class="form-section">
+                    <div class="label-row">키워드 <span>*</span></div>
+                    <span class="label-desc">정보를 불러올 키워드를 콤마(,)로 구분해 입력해 주세요</span>
+                    <input type="text" class="input-box kb-keywords" value="${keywordsStr}" placeholder="예) 지팡이, 무기, !장비">
+                </div>
+
+                <div class="form-section" style="margin-bottom:0;">
+                    <div class="label-row">키워드북 적용 대상 <span>*</span></div>
+                    <div class="tag-chip">${setName}</div>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        // 3. 추가
+        function addKeywordCard() {
+            const targetSetIndex = currentFilter === 'all' ? 0 : currentFilter;
+            
+            if (!globalData.startingSets[targetSetIndex].keywordBook) {
+                globalData.startingSets[targetSetIndex].keywordBook = [];
+            }
+
+            globalData.startingSets[targetSetIndex].keywordBook.push({
+                name: "새 키워드 노트",
+                prompt: "",
+                keywords: []
+            });
+
+            saveToLocal();
+            renderTabs();
+            renderKeywords();
+        }
+
+        // 삭제
+        function removeKeyword(btn) {
+            const card = btn.closest('.keyword-card');
+            const sIdx = parseInt(card.dataset.setIndex);
+            const iIdx = parseInt(card.dataset.itemIndex);
+
+            globalData.startingSets[sIdx].keywordBook.splice(iIdx, 1);
+            saveToLocal();
+            renderTabs();
+            renderKeywords();
+        }
+
+        // 저장 로직 (입력값 -> 데이터 동기화)
+        function updateGlobalDataFromForm() {
+            const cards = document.querySelectorAll('.keyword-card');
+            cards.forEach(card => {
+                const sIdx = parseInt(card.dataset.setIndex);
+                const iIdx = parseInt(card.dataset.itemIndex);
+                
+                if (globalData.startingSets[sIdx] && globalData.startingSets[sIdx].keywordBook[iIdx]) {
+                    const item = globalData.startingSets[sIdx].keywordBook[iIdx];
+                    
+                    item.name = card.querySelector('.kb-name').value;
+                    item.prompt = card.querySelector('.kb-prompt').value;
+                    
+                    // 콤마로 구분된 문자열을 다시 배열로 변환
+                    const kwStr = card.querySelector('.kb-keywords').value;
+                    item.keywords = kwStr.split(',').map(s => s.trim()).filter(s => s !== "");
+                }
+            });
+            saveToLocal();
+        }
+
+        function saveToLocal() {
+            localStorage.setItem('storyData', JSON.stringify(globalData));
+        }
+
+        // 공통 파일 로드/저장/이동
+        function loadJsonFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const json = JSON.parse(e.target.result);
+                    globalData = { ...globalData, ...json };
+                    saveToLocal();
+                    renderTabs();
+                    renderKeywords();
+                    alert('데이터를 불러왔습니다.');
+                } catch (err) { alert('파일 오류'); }
+            };
+            reader.readAsText(file);
+        }
+
+        function saveJsonFile() {
+            updateGlobalDataFromForm();
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(globalData, null, 2));
+            const node = document.createElement('a');
+            node.setAttribute("href", dataStr);
+            node.setAttribute("download", "story_data.json");
+            document.body.appendChild(node);
+            node.click();
+            node.remove();
+        }
+
+        function saveAndGo(url) {
+            updateGlobalDataFromForm();
+            location.href = url;
+        }
+    </script>
+</body>
+</html>
