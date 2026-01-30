@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>스토리 만들기 - 프로필</title>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <style>
+        /* 기본 스타일 설정 */
+        :root {
+            --bg-color: #121212;
+            --bg-secondary: #1e1e1e;
+            --text-color: #ffffff;
+            --text-muted: #a0a0a0;
+            --accent-color: #ff4747;
+            --border-color: #333333;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); line-height: 1.5; }
+
+        /* 레이아웃 */
+        .container { display: flex; max-width: 1200px; margin: 0 auto; padding: 20px; gap: 40px; }
+        .main-content { flex: 2; }
+        .sidebar { flex: 1; }
+
+        /* 헤더 & 내비게이션 */
+        .site-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 20px; border-bottom: 1px solid var(--border-color); background: var(--bg-secondary);
+        }
+        .nav-links { display: flex; gap: 20px; }
+        .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; }
+        .nav-links a.active { color: var(--text-color); font-weight: bold; border-bottom: 2px solid var(--accent-color); padding-bottom: 5px;}
+
+        /* 파일 조작 버튼 영역 */
+        .file-actions { display: flex; gap: 10px; }
+        .btn-file {
+            padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; cursor: pointer; border: 1px solid #444; background: #333; color: white;
+        }
+        .btn-file:hover { background: #444; }
+
+        /* 페이지 제목 */
+        .page-title { font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; padding-left: 20px; }
+        .warning-box { background-color: #2a2a2a; padding: 15px; border-radius: 8px; margin-bottom: 30px; font-size: 0.9rem; color: var(--text-muted); }
+
+        /* 입력 폼 스타일 */
+        .form-group { margin-bottom: 25px; }
+        .form-label { display: block; font-weight: bold; margin-bottom: 10px; }
+        .form-label span { color: var(--accent-color); }
+        .form-input, .form-textarea {
+            width: 100%; padding: 12px; background-color: var(--bg-secondary); border: 1px solid var(--border-color);
+            border-radius: 8px; color: var(--text-color); font-size: 1rem;
+        }
+        .form-textarea { resize: vertical; height: 120px; }
+        .char-count { text-align: right; font-size: 0.8rem; color: var(--text-muted); margin-top: 5px; }
+        .form-note { font-size: 0.8rem; color: var(--text-muted); margin-top: 10px; }
+
+        /* 이미지 업로드 섹션 */
+        .image-upload-container { display: flex; align-items: flex-start; gap: 20px; }
+        .image-preview {
+            width: 100px; height: 100px; background-color: var(--bg-secondary); border-radius: 8px;
+            background-size: cover; background-position: center; background-repeat: no-repeat;
+            border: 1px solid var(--border-color);
+        }
+        .upload-buttons button {
+            padding: 8px 15px; margin-right: 10px; background-color: var(--bg-secondary); border: 1px solid var(--border-color);
+            color: var(--text-color); border-radius: 6px; cursor: pointer; font-size: 0.9rem;
+        }
+
+        /* 사이드바 스타일 */
+        .sidebar-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; }
+        .creator-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .creator-card { background-color: var(--bg-secondary); border-radius: 8px; overflow: hidden; padding: 10px; }
+        .creator-thumbnail { width: 100%; aspect-ratio: 1/1; background-color: #333; border-radius: 6px; margin-bottom: 10px; }
+        .creator-title { font-weight: bold; font-size: 0.95rem; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .creator-desc { font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* 하단 버튼 영역 */
+        .bottom-bar {
+            position: fixed; bottom: 0; left: 0; width: 100%; background: var(--bg-secondary); padding: 15px 20px;
+            display: flex; justify-content: flex-end; border-top: 1px solid var(--border-color);
+        }
+        .next-button {
+            padding: 10px 30px; background-color: var(--accent-color); color: white; border: none; border-radius: 6px;
+            font-weight: bold; cursor: pointer; font-size: 1rem;
+        }
+        .container { padding-bottom: 80px; }
+    </style>
+</head>
+<body>
+
+    <header class="site-header">
+        <div style="font-weight:bold;">스토리 만들기</div>
+        <nav class="nav-links">
+            <a href="#" class="active">프로필</a>
+            <a href="#" onclick="saveAndGo('story.html')">스토리 설정</a>
+            <a href="#" onclick="saveAndGo('start_setting.html')">시작 설정</a>
+            <a href="#" onclick="saveAndGo('stat_setting.html')">스탯 설정</a>
+        </nav>
+        
+        <div class="file-actions">
+            <input type="file" id="jsonFileInput" accept=".json" style="display: none;" onchange="loadJsonFile(this)">
+            <button class="btn-file" onclick="document.getElementById('jsonFileInput').click()">📂 불러오기</button>
+            <button class="btn-file" onclick="saveJsonFile()">💾 저장하기</button>
+        </div>
+    </header>
+
+    <h1 class="page-title">프로필 설정</h1>
+
+    <div class="container">
+        <main class="main-content">
+            <div class="warning-box">
+                민감한 스토리의 경우 제작 시 성인 인증이 필요해요.
+            </div>
+
+            <form id="profileForm">
+                <div class="form-group">
+                    <label class="form-label">이미지 <span>*</span></label>
+                    <div class="image-upload-container">
+                        <div id="imagePreview" class="image-preview" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22 fill=%22none%22 stroke=%22%23666%22><rect x=%223%22 y=%223%22 width=%2218%22 height=%2218%22 rx=%222%22/><circle cx=%228.5%22 cy=%228.5%22 r=%221.5%22/><polyline points=%2221 15 16 10 5 21%22/></svg>');"></div>
+                        <div class="upload-buttons">
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">이미지를 드래그하거나 URL을 입력하세요.</p>
+                            <button type="button" onclick="alert('이미지 업로드 기능은 서버가 필요합니다. JSON 불러오기를 테스트해보세요.')">업로드</button>
+                            <button type="button" onclick="clearImage()">삭제</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">이름 <span>*</span></label>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px;">2~30자 이내로 입력해 주세요</p>
+                    <input type="text" id="charName" class="form-input" placeholder="스토리의 이름을 입력해 주세요">
+                    <div class="char-count"><span id="nameCount">0</span> / 30</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">한 줄 소개 <span>*</span></label>
+                    <textarea id="simpleDesc" class="form-textarea" placeholder="어떤 스토리인지 설명할 수 있는 간단한 소개를 입력해 주세요"></textarea>
+                    <div class="char-count"><span id="descCount">0</span> / 50</div>
+                </div>
+
+                <p class="form-note">ⓘ 욕설, 혐오, 명예훼손 등의 표현 및 이미지는 운영정책에 따라 제재될 수 있어요.</p>
+            </form>
+        </main>
+
+        <aside class="sidebar">
+            <h2 class="sidebar-title">떠오르는 신예 창작자들</h2>
+            <div class="creator-grid">
+                <div class="creator-card">
+                    <div class="creator-thumbnail"></div>
+                    <div class="creator-title">예시 작품 1</div>
+                    <div class="creator-desc">설명...</div>
+                </div>
+                </div>
+        </aside>
+    </div>
+
+    <div class="bottom-bar">
+        <button class="next-button" onclick="saveAndGo('story.html')">다음</button>
+    </div>
+
+    <script>
+        // 전역 변수: 전체 데이터를 담을 객체 (초기 구조)
+        let globalData = {
+            prompt: {
+                name: "",
+                simpleDescription: "",
+                profileImage: { origin: "" }
+            },
+            // 다른 페이지의 데이터 구조도 여기에 유지됨
+        };
+
+        // 페이지 로드 시: LocalStorage에 저장된 데이터가 있으면 불러옴
+        window.onload = function() {
+            const savedData = localStorage.getItem('storyData');
+            if (savedData) {
+                globalData = JSON.parse(savedData);
+                applyDataToForm();
+            }
+        };
+
+        // [기능 1] JSON 파일 불러오기
+        function loadJsonFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const json = JSON.parse(e.target.result);
+                    console.log("JSON Loaded:", json);
+
+                    // 기존 데이터와 병합 (불러온 파일이 우선)
+                    globalData = { ...globalData, ...json };
+
+                    // 화면에 반영
+                    applyDataToForm();
+                    
+                    // LocalStorage에 저장 (다른 페이지에서도 쓰기 위해)
+                    localStorage.setItem('storyData', JSON.stringify(globalData));
+                    
+                    alert('파일을 성공적으로 불러왔습니다!');
+                } catch (err) {
+                    alert('JSON 파일 형식이 올바르지 않습니다.');
+                    console.error(err);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // 데이터 -> 화면 입력창에 적용하는 함수
+        function applyDataToForm() {
+            if (globalData.prompt) {
+                // 이름
+                if (globalData.prompt.name) {
+                    document.getElementById('charName').value = globalData.prompt.name;
+                    updateCount('charName', 'nameCount');
+                }
+                // 한 줄 소개 (JSON의 simpleDescription 또는 detailDescription 활용)
+                if (globalData.prompt.simpleDescription) {
+                    document.getElementById('simpleDesc').value = globalData.prompt.simpleDescription;
+                    updateCount('simpleDesc', 'descCount');
+                }
+                // 이미지 (프로필 이미지 URL이 있다면)
+                if (globalData.prompt.profileImage && globalData.prompt.profileImage.origin) {
+                    const imgUrl = globalData.prompt.profileImage.origin;
+                    document.getElementById('imagePreview').style.backgroundImage = `url('${imgUrl}')`;
+                }
+            }
+        }
+
+        // [기능 2] JSON 파일 저장하기
+        function saveJsonFile() {
+            // 현재 화면의 입력값을 globalData에 최신화
+            updateGlobalDataFromForm();
+
+            // JSON 파일 다운로드 트리거
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(globalData, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "story_data.json");
+            document.body.appendChild(downloadAnchorNode); // required for firefox
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        // 현재 폼 데이터를 전역 객체에 업데이트
+        function updateGlobalDataFromForm() {
+            if (!globalData.prompt) globalData.prompt = {};
+            
+            globalData.prompt.name = document.getElementById('charName').value;
+            globalData.prompt.simpleDescription = document.getElementById('simpleDesc').value;
+            // 이미지는 URL 방식이 아니면 로컬 파일 저장이 어려우므로 여기서는 스킵하거나 기존 유지
+            
+            // 변경사항 LocalStorage에도 저장
+            localStorage.setItem('storyData', JSON.stringify(globalData));
+        }
+
+        // 다음 페이지로 이동
+        function saveAndGo(url) {
+            updateGlobalDataFromForm(); // 이동 전 자동 저장
+            location.href = url;
+        }
+
+        // 글자수 카운팅 (UI용)
+        function updateCount(inputId, countId) {
+            const input = document.getElementById(inputId);
+            const count = document.getElementById(countId);
+            if(input && count) count.innerText = input.value.length;
+        }
+        document.getElementById('charName').addEventListener('input', () => updateCount('charName', 'nameCount'));
+        document.getElementById('simpleDesc').addEventListener('input', () => updateCount('simpleDesc', 'descCount'));
+
+        // 이미지 삭제 (초기화)
+        function clearImage() {
+            document.getElementById('imagePreview').style.backgroundImage = 'none';
+            if(globalData.prompt && globalData.prompt.profileImage) {
+                globalData.prompt.profileImage.origin = "";
+            }
+        }
+    </script>
+</body>
+</html>
