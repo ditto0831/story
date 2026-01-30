@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>스토리 등록</title>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <style>
+        /* --- 공통 스타일 --- */
+        :root {
+            --bg-color: #121212;
+            --bg-secondary: #1e1e1e;
+            --text-color: #ffffff;
+            --text-muted: #a0a0a0;
+            --accent-color: #ff4747;
+            --border-color: #333333;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); line-height: 1.5; height: 100vh; display: flex; flex-direction: column; }
+
+        /* 상단 네비게이션 */
+        .header-nav {
+            background: var(--bg-secondary);
+            padding: 10px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: space-between; font-size: 0.9rem;
+        }
+        .nav-left { display: flex; align-items: center; }
+        .step-list { display: flex; gap: 20px; list-style: none; margin-left: 20px; }
+        .step-item { color: var(--text-muted); cursor: pointer; position: relative; }
+        .step-item.active { color: var(--accent-color); font-weight: bold; }
+        .step-item.active::after { content:''; position:absolute; bottom:-14px; left:0; width:100%; height:2px; background:var(--accent-color); }
+
+        /* 파일 조작 버튼 */
+        .file-actions { display: flex; gap: 10px; }
+        .btn-file {
+            padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; cursor: pointer; border: 1px solid #444; background: #333; color: white;
+        }
+        .btn-file:hover { background: #444; }
+
+        .container { display: flex; flex: 1; overflow: hidden; }
+        .left-panel { flex: 1; padding: 20px; overflow-y: auto; border-right: 1px solid var(--border-color); max-width: 50%; }
+
+        /* 폼 요소 공통 */
+        .form-section { margin-bottom: 25px; }
+        .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .label-title { font-weight: bold; font-size: 0.9rem; }
+        .label-title span { color: var(--accent-color); }
+        .label-desc { font-size: 0.8rem; color: #888; margin-bottom: 8px; display: block; }
+        
+        .input-box, .textarea-box, .select-box {
+            width: 100%; background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-color); padding: 12px; border-radius: 6px; font-size: 0.95rem; outline: none;
+        }
+        .textarea-box { resize: vertical; line-height: 1.6; }
+
+        /* 태그 입력 및 칩 스타일 */
+        .tag-container {
+            display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;
+        }
+        .tag-chip {
+            background: #333; padding: 5px 12px; border-radius: 15px; font-size: 0.85rem; display: flex; align-items: center; gap: 5px; border: 1px solid #444; color: #eee;
+        }
+        .tag-chip button { background: none; border: none; color: #888; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; }
+        .tag-chip button:hover { color: #fff; }
+
+        /* 박스형 라디오 버튼 (공개 설정 등) */
+        .radio-group { display: flex; flex-direction: column; gap: 10px; }
+        .radio-box {
+            display: flex; align-items: center; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: 0.2s; background: var(--bg-secondary);
+        }
+        .radio-box:hover { background: #2a2a2a; }
+        .radio-box.selected { border-color: var(--accent-color); background: rgba(255, 71, 71, 0.05); }
+        
+        .radio-input { margin-right: 15px; accent-color: var(--accent-color); transform: scale(1.2); }
+        .radio-content { display: flex; flex-direction: column; }
+        .radio-label { font-weight: bold; font-size: 0.95rem; margin-bottom: 2px; }
+        .radio-desc { font-size: 0.8rem; color: #888; }
+        .icon-check { color: #4caf50; margin-right: 5px; }
+        .icon-warn { color: #f44336; margin-right: 5px; }
+
+        /* 토글 스위치 */
+        .toggle-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+        .toggle-switch {
+            position: relative; display: inline-block; width: 40px; height: 20px;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; transition: .4s; border-radius: 20px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--accent-color); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        /* --- 오른쪽 패널 (최종 미리보기) --- */
+        .right-panel { flex: 1; background-color: #000; display: flex; flex-direction: column; }
+        .preview-header { padding: 15px; border-bottom: 1px solid #333; font-weight: bold; font-size: 1rem; color: #ccc; background: rgba(30, 30, 30, 0.8); }
+        .preview-area { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px; background: #000; overflow-y: auto; }
+        
+        /* 최종 카드 스타일 */
+        .final-card {
+            width: 320px; background: #121212; border-radius: 12px; overflow: hidden; border: 1px solid #333;
+        }
+        .card-image-area {
+            width: 100%; height: 320px; background: #333; position: relative;
+            background-size: cover; background-position: center;
+        }
+        
+        .like-badge {
+            position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: #fff; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; display: flex; align-items: center; gap: 4px;
+        }
+
+        .card-info { padding: 20px; }
+        .card-title-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; }
+        .f-card-title { font-size: 1.2rem; font-weight: bold; color: #fff; }
+        .f-card-user { font-size: 0.9rem; color: #888; margin-bottom: 15px; }
+        
+        .f-tags { display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap; }
+        .f-tag { background: #2a2a2a; color: #ccc; font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; }
+
+        .f-stats { display: flex; gap: 15px; color: #666; font-size: 0.8rem; margin-bottom: 20px; }
+        
+        .detail-box { background: #1e1e1e; padding: 15px; border-radius: 8px; margin-bottom: 10px; }
+        .detail-label { font-size: 0.8rem; color: #888; margin-bottom: 5px; display: block; }
+        .detail-text { font-size: 0.9rem; color: #ccc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .play-btn-large {
+            width: 100%; padding: 12px; background: #333; color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px;
+        }
+
+        /* 하단바 */
+        .bottom-nav { padding: 15px 20px; border-top: 1px solid var(--border-color); background: var(--bg-secondary); display: flex; justify-content: space-between; }
+        .btn-prev { background: #333; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+        .btn-submit { background: var(--accent-color); color: white; border: none; padding: 10px 30px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <header class="header-nav">
+        <div class="nav-left">
+            <div style="font-weight:bold; font-size:1.1rem; margin-right:20px;">← 스토리 만들기</div>
+            <ul class="step-list">
+                <li class="step-item" onclick="saveAndGo('index.html')">프로필</li>
+                <li class="step-item" onclick="saveAndGo('story.html')">스토리 설정</li>
+                <li class="step-item" onclick="saveAndGo('start_setting.html')">시작 설정</li>
+                <li class="step-item" onclick="saveAndGo('stat_setting.html')">스탯 설정</li>
+                <li class="step-item" onclick="saveAndGo('media_setting.html')">미디어</li>
+                <li class="step-item" onclick="saveAndGo('keyword_book.html')">키워드북</li>
+                <li class="step-item" onclick="saveAndGo('ending_setting.html')">엔딩 설정</li>
+                <li class="step-item active">등록</li>
+            </ul>
+        </div>
+        <div class="file-actions">
+            <input type="file" id="jsonFileInput" accept=".json" style="display: none;" onchange="loadJsonFile(this)">
+            <button class="btn-file" onclick="document.getElementById('jsonFileInput').click()">📂 불러오기</button>
+            <button class="btn-file" onclick="saveJsonFile()">💾 저장하기</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <aside class="left-panel">
+            
+            <div style="margin-bottom: 20px;">
+                <h2 style="font-size:1.1rem; margin-bottom:5px;">상세 설명 <span>*</span></h2>
+                <span class="label-desc">스토리에 대한 구체적인 설명을 입력해 주세요</span>
+                <textarea id="detailDescInput" class="textarea-box" style="height:120px;" placeholder="스토리의 성격이나 서사, 과거 사건 등 상세한 내용을 작성해 주세요"></textarea>
+                <div style="text-align:right; font-size:0.8rem; color:#666; margin-top:5px;">0 / 1000</div>
+            </div>
+
+            <div class="form-section">
+                <div class="label-row"><span class="label-title">장르 설정 <span>*</span></span></div>
+                <select id="genreSelect" class="select-box">
+                    <option value="">장르를 선택해주세요</option>
+                    <option value="romance">로맨스</option>
+                    <option value="fantasy">판타지</option>
+                    <option value="sf">SF</option>
+                    <option value="horror">공포/스릴러</option>
+                </select>
+            </div>
+            <div class="form-section">
+                <div class="label-row"><span class="label-title">타겟 설정 <span>*</span></span></div>
+                <span class="label-desc">선택된 타겟에 따라 다른 사용자에게 추천돼요.</span>
+                <select id="targetSelect" class="select-box">
+                    <option value="">타겟을 선택해주세요</option>
+                    <option value="female">여성향</option>
+                    <option value="male">남성향</option>
+                    <option value="all">전체</option>
+                </select>
+            </div>
+            <div class="form-section">
+                <div class="label-row"><span class="label-title">대화 형태 설정 <span>*</span></span></div>
+                <select id="chatTypeSelect" class="select-box">
+                    <option value="">대화 형태를 선택해주세요</option>
+                    <option value="rolePlaying">역할놀이</option>
+                    <option value="chat">일상대화</option>
+                </select>
+            </div>
+            <div class="form-section">
+                <div class="label-row"><span class="label-title">권장 모드 <span>*</span></span></div>
+                <select class="select-box"><option>🔮 슈퍼챗 2.0 (기본)</option></select>
+            </div>
+
+            <div class="form-section">
+                <div class="label-row"><span class="label-title">해시태그</span></div>
+                <span class="label-desc">해시태그를 입력해 주세요. 단어 입력 후 엔터를 눌러주세요. (최대 10개)</span>
+                <input type="text" id="hashtagInput" class="input-box" placeholder="단어 입력 후 엔터" onkeypress="handleTagInput(event)">
+                <div id="tagContainer" class="tag-container">
+                    </div>
+            </div>
+
+            <div class="form-section">
+                <div class="label-row"><span class="label-title">이용자 층 설정 <span>*</span></span></div>
+                <span class="label-desc">이용자 층은 한번 설정하면 변경할 수 없어요.</span>
+                <div class="radio-group">
+                    <label class="radio-box" id="radioMinor" onclick="selectAge('minor')">
+                        <input type="radio" name="age" class="radio-input" value="false">
+                        <div class="radio-content">
+                            <span class="radio-label"><span class="icon-check">✔</span> 미성년자가 대화하기에 적절해요</span>
+                        </div>
+                    </label>
+                    <label class="radio-box" id="radioAdult" onclick="selectAge('adult')">
+                        <input type="radio" name="age" class="radio-input" value="true">
+                        <div class="radio-content">
+                            <span class="radio-label"><span class="icon-warn">🛡️</span> 미성년자가 대화하기에 적절하지 않아요</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="label-row"><span class="label-title">공개 여부 <span>*</span></span></div>
+                <div class="radio-group">
+                    <label class="radio-box selected">
+                        <input type="radio" name="visibility" class="radio-input" checked>
+                        <div class="radio-content">
+                            <span class="radio-label">비공개</span>
+                            <span class="radio-desc">스토리 제작자만 이 스토리를 플레이할 수 있어요</span>
+                        </div>
+                    </label>
+                    </div>
+            </div>
+
+        </aside>
+
+        <main class="right-panel">
+            <div class="preview-header">미리보기</div>
+            <div class="preview-area">
+                
+                <div class="final-card">
+                    <div class="card-image-area" id="previewImage">
+                        <div class="like-badge">👍 1.6K</div>
+                    </div>
+                    <div class="card-info">
+                        <div class="card-title-row">
+                            <span class="f-card-title" id="previewTitle">스토리 이름</span>
+                        </div>
+                        <div class="f-card-user">@User</div>
+                        
+                        <div class="f-tags" id="previewTags">
+                            </div>
+                        
+                        <div class="f-stats">
+                            <span>👁️ 20.2K</span>
+                            <span>👍 10.2K</span>
+                            <span>💬 100</span>
+                        </div>
+
+                        <div class="detail-box">
+                            <span class="detail-label">프롤로그 미리보기</span>
+                            <div class="detail-text" id="previewPrologue">기본 설정</div>
+                        </div>
+
+                        <button class="play-btn-large">플레이</button>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <footer class="bottom-nav">
+        <button class="btn-prev" onclick="saveAndGo('ending_setting.html')">이전</button>
+        <button class="btn-submit" onclick="alert('스토리가 성공적으로 등록되었습니다! 🎉')">등록하기</button>
+    </footer>
+
+    <script>
+        let globalData = {
+            prompt: {
+                name: "",
+                description: "",
+                detailDescription: "",
+                genre: { name: "" },
+                target: "",
+                chatType: "",
+                tags: [],
+                isAdult: false,
+                profileImage: { origin: "" }
+            },
+            startingSets: [{ initialMessages: [] }]
+        };
+
+        window.onload = function() {
+            const savedData = localStorage.getItem('storyData');
+            if (savedData) {
+                globalData = JSON.parse(savedData);
+                // 데이터 초기화 안전장치
+                if (!globalData.prompt) globalData.prompt = { tags: [] };
+                if (!globalData.prompt.tags) globalData.prompt.tags = [];
+                
+                applyDataToForm();
+                updatePreview();
+            }
+        };
+
+        // 데이터 -> 화면 적용
+        function applyDataToForm() {
+            const p = globalData.prompt;
+
+            // 상세 설명 (detailDescription이 있으면 그것, 없으면 description)
+            const desc = p.detailDescription || p.description || "";
+            document.getElementById('detailDescInput').value = desc;
+
+            // 장르 (JSON: {name: '로맨스', type: 'romance'}) -> select value 매칭
+            // JSON 데이터가 한글('로맨스')로 들어오는지 영어('romance')로 들어오는지 확인 필요
+            // 여기서는 type(영어) 기준으로 매칭 시도
+            if (p.genre && p.genre.type) {
+                document.getElementById('genreSelect').value = p.genre.type;
+            } else if (p.genre && p.genre.name === '로맨스') {
+                 // type이 없고 한글 이름만 있을 경우 대비
+                 document.getElementById('genreSelect').value = 'romance';
+            }
+
+            // 타겟
+            if (p.target) document.getElementById('targetSelect').value = p.target;
+
+            // 대화 형태
+            if (p.chatType) document.getElementById('chatTypeSelect').value = p.chatType;
+
+            // 태그 렌더링
+            renderTags();
+
+            // 성인 여부 (isAdult: true/false)
+            if (p.isAdult) {
+                selectAge('adult');
+            } else {
+                selectAge('minor');
+            }
+        }
+
+        // 태그 렌더링 함수
+        function renderTags() {
+            const container = document.getElementById('tagContainer');
+            container.innerHTML = '';
+            
+            globalData.prompt.tags.forEach((tag, index) => {
+                const chip = document.createElement('div');
+                chip.className = 'tag-chip';
+                chip.innerHTML = `${tag} <button onclick="removeTag(${index})">✕</button>`;
+                container.appendChild(chip);
+            });
+            updatePreview(); // 태그 변경 시 미리보기도 업데이트
+        }
+
+        // 태그 추가 (Enter키)
+        function handleTagInput(e) {
+            if (e.key === 'Enter') {
+                const val = e.target.value.trim();
+                if (val && !globalData.prompt.tags.includes(val)) {
+                    if (globalData.prompt.tags.length >= 10) {
+                        alert('태그는 최대 10개까지 가능합니다.');
+                        return;
+                    }
+                    globalData.prompt.tags.push(val);
+                    renderTags();
+                    e.target.value = '';
+                    saveToLocal();
+                }
+            }
+        }
+
+        // 태그 삭제
+        function removeTag(index) {
+            globalData.prompt.tags.splice(index, 1);
+            renderTags();
+            saveToLocal();
+        }
+
+        // 성인/미성년자 선택 UI 처리
+        function selectAge(type) {
+            const minorBtn = document.getElementById('radioMinor');
+            const adultBtn = document.getElementById('radioAdult');
+            
+            if (type === 'adult') {
+                adultBtn.classList.add('selected');
+                adultBtn.querySelector('input').checked = true;
+                minorBtn.classList.remove('selected');
+                globalData.prompt.isAdult = true;
+            } else {
+                minorBtn.classList.add('selected');
+                minorBtn.querySelector('input').checked = true;
+                adultBtn.classList.remove('selected');
+                globalData.prompt.isAdult = false;
+            }
+            saveToLocal();
+        }
+
+        // 미리보기 업데이트
+        function updatePreview() {
+            const p = globalData.prompt;
+            
+            // 제목
+            if (p.name) document.getElementById('previewTitle').innerText = p.name;
+
+            // 이미지 (1페이지에서 설정한 이미지 URL)
+            if (p.profileImage && p.profileImage.origin) {
+                document.getElementById('previewImage').style.backgroundImage = `url('${p.profileImage.origin}')`;
+            }
+
+            // 태그 (미리보기 카드에는 최대 3개 정도만 표시 or 전체 표시)
+            const tagContainer = document.getElementById('previewTags');
+            tagContainer.innerHTML = '';
+            // 장르 먼저 표시 (칩 스타일)
+            if (p.genre && p.genre.name) {
+                 tagContainer.innerHTML += `<span class="f-tag">🏷️ ${p.genre.name}</span>`;
+            }
+            // 나머지 태그들
+            if (p.tags) {
+                p.tags.slice(0, 3).forEach(tag => { // 공간상 3개만
+                     tagContainer.innerHTML += `<span class="f-tag">#${tag}</span>`;
+                });
+            }
+
+            // 프롤로그 미리보기 (첫번째 시작설정의 첫 메시지)
+            if (globalData.startingSets && globalData.startingSets[0] && globalData.startingSets[0].initialMessages) {
+                const msgs = globalData.startingSets[0].initialMessages;
+                const firstMsg = Array.isArray(msgs) ? msgs[0] : msgs;
+                if (firstMsg) {
+                     document.getElementById('previewPrologue').innerText = firstMsg;
+                }
+            }
+        }
+
+        // 저장 로직 (입력값 -> 데이터)
+        function updateGlobalDataFromForm() {
+            globalData.prompt.detailDescription = document.getElementById('detailDescInput').value;
+            // Select 값들 업데이트 (단순 value 저장 or 구조체 매칭)
+            const genreVal = document.getElementById('genreSelect').value;
+            const genreText = document.getElementById('genreSelect').options[document.getElementById('genreSelect').selectedIndex].text;
+            
+            globalData.prompt.genre = { type: genreVal, name: genreText };
+            globalData.prompt.target = document.getElementById('targetSelect').value;
+            globalData.prompt.chatType = document.getElementById('chatTypeSelect').value;
+            
+            saveToLocal();
+        }
+
+        function saveToLocal() {
+            localStorage.setItem('storyData', JSON.stringify(globalData));
+        }
+
+        // 공통 파일 로드/저장/이동
+        function loadJsonFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const json = JSON.parse(e.target.result);
+                    globalData = { ...globalData, ...json };
+                    saveToLocal();
+                    applyDataToForm();
+                    updatePreview();
+                    alert('데이터를 불러왔습니다.');
+                } catch (err) { alert('파일 오류'); }
+            };
+            reader.readAsText(file);
+        }
+
+        function saveJsonFile() {
+            updateGlobalDataFromForm();
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(globalData, null, 2));
+            const node = document.createElement('a');
+            node.setAttribute("href", dataStr);
+            node.setAttribute("download", "story_data.json");
+            document.body.appendChild(node);
+            node.click();
+            node.remove();
+        }
+
+        function saveAndGo(url) {
+            updateGlobalDataFromForm();
+            location.href = url;
+        }
+    </script>
+</body>
+</html>
