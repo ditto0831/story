@@ -2,127 +2,375 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>시작 설정</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
-        /* (2페이지와 동일한 CSS 코드) */
-        :root { --bg-color: #121212; --bg-secondary: #1e1e1e; --text-color: #ffffff; --text-muted: #a0a0a0; --accent-color: #ff4747; --border-color: #333333; }
+        /* --- 공통 스타일 --- */
+        :root {
+            --bg-color: #121212;
+            --bg-secondary: #1e1e1e;
+            --text-color: #ffffff;
+            --text-muted: #a0a0a0;
+            --accent-color: #ff4747;
+            --border-color: #333333;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
         body { background-color: var(--bg-color); color: var(--text-color); line-height: 1.5; height: 100vh; display: flex; flex-direction: column; }
-        .header-nav { background: var(--bg-secondary); padding: 10px 20px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; font-size: 0.9rem; }
+
+        /* 상단 네비게이션 */
+        .header-nav {
+            background: var(--bg-secondary);
+            padding: 10px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: space-between; font-size: 0.9rem;
+        }
         .nav-left { display: flex; align-items: center; }
         .step-list { display: flex; gap: 20px; list-style: none; margin-left: 20px; }
         .step-item { color: var(--text-muted); cursor: pointer; position: relative; }
         .step-item.active { color: var(--accent-color); font-weight: bold; }
         .step-item.active::after { content:''; position:absolute; bottom:-14px; left:0; width:100%; height:2px; background:var(--accent-color); }
+
+        /* 파일 조작 버튼 */
+        .file-actions { display: flex; gap: 10px; }
+        .btn-file {
+            padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; cursor: pointer; border: 1px solid #444; background: #333; color: white;
+        }
+        .btn-file:hover { background: #444; }
+
         .container { display: flex; flex: 1; overflow: hidden; }
-        .left-panel { flex: 1; padding: 20px; overflow-y: auto; border-right: 1px solid var(--border-color); max-width: 50%; }
-        .input-box, .textarea-box { width: 100%; background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-color); padding: 12px; border-radius: 6px; font-size: 0.95rem; }
-        .textarea-box { height: 120px; resize: vertical; }
-        .right-panel { flex: 1; background-color: #000; }
-        .bottom-nav { padding: 15px 20px; border-top: 1px solid var(--border-color); background: var(--bg-secondary); display: flex; justify-content: space-between; }
+
+        /* --- 왼쪽 패널 (에디터) --- */
+        .left-panel {
+            flex: 1; padding: 20px; overflow-y: auto;
+            border-right: 1px solid var(--border-color); max-width: 50%;
+        }
+
+        /* 탭 스타일 */
+        .tab-row { display: flex; gap: 10px; margin-bottom: 25px; overflow-x: auto; padding-bottom: 5px; }
+        .tab-btn {
+            padding: 6px 16px; border-radius: 20px; font-size: 0.9rem; cursor: pointer; border: 1px solid transparent; white-space: nowrap;
+        }
+        .tab-btn.active { background: #fff; color: #000; font-weight: bold; }
+        .tab-btn.outline { background: transparent; color: #888; border: 1px solid #444; }
+        .tab-btn.outline:hover { border-color: #888; color: #fff; }
+
+        /* 폼 요소 스타일 */
+        .section-box { margin-bottom: 30px; }
+        .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .label-title { font-weight: bold; font-size: 1rem; }
+        .label-title span { color: var(--accent-color); }
+        .label-desc { font-size: 0.8rem; color: #888; margin-bottom: 8px; display: block; }
+
+        .btn-small {
+            background: #333; color: #fff; border: 1px solid #444;
+            padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; cursor: pointer;
+        }
+        .btn-small.red-outline { border: 1px solid var(--accent-color); color: var(--accent-color); background: transparent; }
+
+        .input-box, .textarea-box {
+            width: 100%; background: var(--bg-secondary); border: 1px solid var(--border-color);
+            color: var(--text-color); padding: 12px; border-radius: 6px; font-size: 0.95rem;
+        }
+        .textarea-box { height: 120px; resize: vertical; line-height: 1.6; }
+
+        /* 고급 설정 바 */
+        .advanced-bar {
+            background: #252525; padding: 12px; border-radius: 6px;
+            font-size: 0.9rem; font-weight: bold; cursor: pointer; margin-bottom: 20px;
+            display: flex; justify-content: space-between;
+        }
+        
+        /* 추천 답변 리스트 */
+        .reply-item { display: flex; gap: 10px; margin-bottom: 10px; }
+        .reply-input { flex: 1; }
+        .btn-del-reply { background: #333; border: 1px solid #444; color: #fff; width: 40px; border-radius: 6px; cursor: pointer; }
+
+        .btn-full {
+            width: 100%; padding: 12px; background: var(--bg-secondary); border: 1px solid var(--border-color);
+            color: var(--text-muted); border-radius: 6px; cursor: pointer; text-align: center; font-size: 0.9rem;
+        }
+        .btn-full:hover { background: #333; color: #fff; }
+
+        /* --- 오른쪽 패널 (채팅 미리보기 - 동일 유지) --- */
+        .right-panel {
+            flex: 1; background-color: #000; display: flex; flex-direction: column; position: relative;
+        }
+        .preview-header {
+            padding: 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; background: rgba(30, 30, 30, 0.8);
+        }
+        .chat-area { flex: 1; display: flex; align-items: center; justify-content: center; color: #555; font-size: 0.9rem; }
+        .chat-input-area { padding: 20px; }
+        .chat-input-wrapper {
+            background: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 12px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .send-btn { width: 30px; height: 30px; background: #fff; border-radius: 50%; border: none; cursor: pointer; }
+
+        /* 하단 네비게이션 */
+        .bottom-nav {
+            padding: 15px 20px; border-top: 1px solid var(--border-color); background: var(--bg-secondary);
+            display: flex; justify-content: space-between;
+        }
         .btn-prev { background: #333; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
         .btn-next { background: var(--accent-color); color: white; border: none; padding: 10px 30px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .section-box { margin-bottom: 30px; }
-        .label-title { font-weight: bold; font-size: 1rem; margin-bottom:10px; display:block;}
-        .label-title span { color: var(--accent-color); }
-        .header-actions { display: flex; gap: 10px; }
-        .btn-header { padding: 5px 10px; font-size: 0.8rem; background: #333; border: 1px solid #555; color: #ccc; border-radius: 4px; cursor: pointer; }
-        .btn-header:hover { background: #444; color: #fff; }
     </style>
 </head>
 <body>
+
     <header class="header-nav">
         <div class="nav-left">
             <div style="font-weight:bold; font-size:1.1rem; margin-right:20px;">← 스토리 만들기</div>
             <ul class="step-list">
-                <li class="step-item">프로필</li>
-                <li class="step-item">스토리 설정</li>
+                <li class="step-item" onclick="saveAndGo('index.html')">프로필</li>
+                <li class="step-item" onclick="saveAndGo('story.html')">스토리 설정</li>
                 <li class="step-item active">시작 설정</li>
-                <li class="step-item">스탯 설정</li>
+                <li class="step-item" onclick="saveAndGo('stat_setting.html')">스탯 설정</li>
+                <li class="step-item">미디어</li>
             </ul>
         </div>
-        <div class="header-actions">
-            <button class="btn-header" onclick="saveData()">💾 저장</button>
+        <div class="file-actions">
+            <input type="file" id="jsonFileInput" accept=".json" style="display: none;" onchange="loadJsonFile(this)">
+            <button class="btn-file" onclick="document.getElementById('jsonFileInput').click()">📂 불러오기</button>
+            <button class="btn-file" onclick="saveJsonFile()">💾 저장하기</button>
         </div>
     </header>
 
     <div class="container">
         <aside class="left-panel">
-            <div class="section-box">
-                <span class="label-title">시작설정 이름 <span>*</span></span>
-                <input type="text" id="setName" class="input-box" value="기본 설정">
+            
+            <div class="tab-row" id="tabContainer">
+                <button class="tab-btn active">기본 설정</button>
+                <button class="tab-btn outline">+ 설정 추가</button>
             </div>
 
             <div class="section-box">
-                <span class="label-title">프롤로그 (첫 메시지) <span>*</span></span>
-                <textarea id="prologue" class="textarea-box" placeholder="스토리의 시작 메시지를 입력하세요"></textarea>
+                <div class="label-row">
+                    <span class="label-title">프롤로그 <span>*</span></span>
+                    <button class="btn-small red-outline">자동 생성</button>
+                </div>
+                <span class="label-desc">스토리의 프롤로그를 작성해 주세요</span>
+                <textarea id="prologueInput" class="textarea-box" placeholder="자동 생성 기능을 활용하면 AI가 프롬프트를 참고하여 초안을 작성해 드려요"></textarea>
+                <div style="text-align:right; font-size:0.8rem; color:#666; margin-top:5px;">0 / 1000</div>
             </div>
 
             <div class="section-box">
-                <span class="label-title">시작 상황</span>
-                <textarea id="situationPrompt" class="textarea-box" style="height:200px;" placeholder="AI에게 전달할 시작 상황 지문을 입력하세요"></textarea>
+                <div class="label-row">
+                    <span class="label-title">시작설정 이름 <span>*</span></span>
+                </div>
+                <span class="label-desc">시작설정의 이름을 작성해 주세요</span>
+                <input type="text" id="setNameInput" class="input-box" value="기본 설정">
+                <div style="text-align:right; font-size:0.8rem; color:#666; margin-top:5px;">5 / 12</div>
             </div>
 
             <div class="section-box">
-                <span class="label-title">플레이 가이드</span>
-                <textarea id="playGuide" class="textarea-box" placeholder="플레이어를 위한 안내사항"></textarea>
+                <div class="label-row">
+                    <span class="label-title">시작 상황</span>
+                </div>
+                <span class="label-desc">스토리 전개를 위한 시작 상황 정보를 입력해 주세요</span>
+                <textarea id="situationInput" class="textarea-box" placeholder="사용자의 역할, 등장인물과의 관계, 이야기가 시작되는 세계관 등"></textarea>
+                <div style="text-align:right; font-size:0.8rem; color:#666; margin-top:5px;">0 / 1000</div>
             </div>
+
+            <div class="advanced-bar">
+                <span>고급 설정 ∨</span>
+            </div>
+
+            <div class="section-box">
+                <div class="label-row">
+                    <span class="label-title">플레이 가이드</span>
+                </div>
+                <span class="label-desc">AI가 기억하지 않는, 사용자에게만 보이는 가이드 메시지를 추가해 플레이 방법을 안내해 보세요.</span>
+                <textarea id="playGuideInput" class="textarea-box" style="height:80px;" placeholder="사용자를 위한 가이드를 작성해주세요"></textarea>
+                <div style="text-align:right; font-size:0.8rem; color:#666; margin-top:5px;">0 / 500</div>
+            </div>
+
+            <div class="section-box">
+                <div class="label-row">
+                    <span class="label-title">추천 답변</span>
+                </div>
+                <span class="label-desc">사용자들에게 첫 답변을 최대 3개 추천해 보세요.</span>
+                
+                <div id="replyList">
+                    </div>
+
+                <button class="btn-full" onclick="addReplySuggestion()">+ 추천 답변 추가</button>
+            </div>
+
         </aside>
 
-        <main class="right-panel"></main>
+        <main class="right-panel">
+            <div class="preview-header">
+                <span style="font-weight:bold;">← 채팅 미리보기</span>
+                <div style="background:#333; padding:5px 10px; border-radius:20px; font-size:0.8rem;">
+                    <span style="color:purple;">●</span> 슈퍼챗 2.0 ∨
+                </div>
+            </div>
+            <div class="chat-area">
+                <div style="text-align:center;">
+                    <p style="margin-bottom:10px;">이 대화는 AI로 생성된 가상의 이야기입니다</p>
+                    <div style="background:#1e1e1e; padding:15px; border-radius:8px; width:300px; margin:0 auto; text-align:left;">
+                        <span style="display:inline-block; width:15px; height:15px; background:#555; border-radius:50%; margin-right:10px;"></span>
+                        <span id="previewName" style="color:#888;">스토리 이름</span>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <div class="chat-input-wrapper">
+                    <div style="color:#666; font-size:0.9rem;">
+                        [이름, 캐릭터 설정 및 정보, 첫 메시지]를 입력해주세요<br>
+                        <span style="font-size:1.2rem;">❄️</span>
+                    </div>
+                    <button class="send-btn">▶</button>
+                </div>
+            </div>
+        </main>
     </div>
 
     <footer class="bottom-nav">
-        <button class="btn-prev" onclick="goPage('story.html')">이전</button>
-        <button class="btn-next" onclick="goPage('stat_setting.html')">다음</button>
+        <button class="btn-prev" onclick="saveAndGo('story.html')">이전</button>
+        <button class="btn-next" onclick="saveAndGo('stat_setting.html')">다음</button>
     </footer>
 
     <script>
-        let globalData = {};
+        // 전역 데이터 (JSON 구조와 동일하게 유지)
+        let globalData = {
+            startingSets: [
+                {
+                    name: "기본 설정",
+                    initialMessages: [],
+                    situationPrompt: "",
+                    playGuide: "",
+                    replySuggestions: []
+                }
+            ]
+        };
+        
+        // 현재 편집 중인 설정의 인덱스 (기본 0)
+        let currentSetIndex = 0;
 
         window.onload = function() {
-            const saved = localStorage.getItem('storyData');
-            if (saved) {
-                globalData = JSON.parse(saved);
-                loadToForm();
+            const savedData = localStorage.getItem('storyData');
+            if (savedData) {
+                globalData = JSON.parse(savedData);
+                // 데이터 구조 초기화 안전장치
+                if (!globalData.startingSets || globalData.startingSets.length === 0) {
+                    globalData.startingSets = [{ name: "기본 설정", initialMessages: [], replySuggestions: [] }];
+                }
+                
+                // 미리보기 이름 표시
+                if (globalData.prompt && globalData.prompt.name) {
+                    document.getElementById('previewName').innerText = globalData.prompt.name;
+                }
+
+                applyDataToForm();
             }
         };
 
-        function loadToForm() {
-            // startingSets 배열이 있고 내용이 있다면 첫 번째(0번) 세트 데이터를 불러옴
-            if (globalData.prompt && globalData.prompt.startingSets && globalData.prompt.startingSets.length > 0) {
-                const set = globalData.prompt.startingSets[0];
-                
-                if (set.name) document.getElementById('setName').value = set.name;
-                if (set.situationPrompt) document.getElementById('situationPrompt').value = set.situationPrompt;
-                if (set.playGuide) document.getElementById('playGuide').value = set.playGuide;
-                
-                // initialMessages는 배열이므로 첫 번째 요소를 문자열로 변환하여 넣음
-                if (set.initialMessages && set.initialMessages.length > 0) {
-                    document.getElementById('prologue').value = set.initialMessages[0];
-                }
+        // 데이터 -> 화면 적용
+        function applyDataToForm() {
+            const currentSet = globalData.startingSets[currentSetIndex];
+
+            // 1. 프롤로그 (배열이므로 합쳐서 보여줌)
+            if (currentSet.initialMessages && currentSet.initialMessages.length > 0) {
+                document.getElementById('prologueInput').value = currentSet.initialMessages.join('\n');
+            } else {
+                document.getElementById('prologueInput').value = "";
+            }
+
+            // 2. 설정 이름
+            document.getElementById('setNameInput').value = currentSet.name || "기본 설정";
+
+            // 3. 시작 상황
+            document.getElementById('situationInput').value = currentSet.situationPrompt || "";
+
+            // 4. 플레이 가이드
+            document.getElementById('playGuideInput').value = currentSet.playGuide || "";
+
+            // 5. 추천 답변 리스트 생성
+            const list = document.getElementById('replyList');
+            list.innerHTML = ''; // 초기화
+            if (currentSet.replySuggestions) {
+                currentSet.replySuggestions.forEach(text => {
+                    addReplySuggestion(text);
+                });
             }
         }
 
-        function saveData() {
-            if (!globalData.prompt) globalData.prompt = {};
-            if (!globalData.prompt.startingSets) globalData.prompt.startingSets = [{}];
+        // 추천 답변 입력칸 추가
+        function addReplySuggestion(val = "") {
+            const list = document.getElementById('replyList');
+            const div = document.createElement('div');
+            div.className = 'reply-item';
+            div.innerHTML = `
+                <input type="text" class="input-box reply-val" value="${val}" placeholder="추천 답변 입력">
+                <button class="btn-del-reply" onclick="this.parentElement.remove()">🗑️</button>
+            `;
+            list.appendChild(div);
+        }
 
-            // 0번 세트에 저장
-            const set = globalData.prompt.startingSets[0];
-            set.name = document.getElementById('setName').value;
-            set.situationPrompt = document.getElementById('situationPrompt').value;
-            set.playGuide = document.getElementById('playGuide').value;
-            set.initialMessages = [document.getElementById('prologue').value];
+        // 화면 -> 데이터 저장
+        function updateGlobalDataFromForm() {
+            // 현재 활성화된 세트 가져오기 (없으면 생성)
+            if (!globalData.startingSets) globalData.startingSets = [];
+            if (!globalData.startingSets[currentSetIndex]) globalData.startingSets[currentSetIndex] = {};
+            
+            const set = globalData.startingSets[currentSetIndex];
 
+            // 값 업데이트
+            set.name = document.getElementById('setNameInput').value;
+            set.situationPrompt = document.getElementById('situationInput').value;
+            set.playGuide = document.getElementById('playGuideInput').value;
+
+            // 프롤로그: 줄바꿈 기준으로 배열로 저장
+            const prologueText = document.getElementById('prologueInput').value;
+            set.initialMessages = prologueText ? [prologueText] : [];
+
+            // 추천 답변: 입력된 값들 수집
+            const replyInputs = document.querySelectorAll('.reply-val');
+            set.replySuggestions = Array.from(replyInputs).map(input => input.value).filter(v => v.trim() !== "");
+
+            // 로컬스토리지 저장
             localStorage.setItem('storyData', JSON.stringify(globalData));
         }
 
-        function goPage(url) {
-            saveData();
+        // 공통 파일 로드
+        function loadJsonFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const json = JSON.parse(e.target.result);
+                    globalData = { ...globalData, ...json };
+                    localStorage.setItem('storyData', JSON.stringify(globalData));
+                    currentSetIndex = 0; // 로드 시 첫번째 탭으로 초기화
+                    applyDataToForm();
+                    alert('데이터를 불러왔습니다.');
+                } catch (err) { alert('파일 오류'); }
+            };
+            reader.readAsText(file);
+        }
+
+        // 공통 파일 저장
+        function saveJsonFile() {
+            updateGlobalDataFromForm();
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(globalData, null, 2));
+            const node = document.createElement('a');
+            node.setAttribute("href", dataStr);
+            node.setAttribute("download", "story_data.json");
+            document.body.appendChild(node);
+            node.click();
+            node.remove();
+        }
+
+        // 페이지 이동
+        function saveAndGo(url) {
+            updateGlobalDataFromForm();
             location.href = url;
         }
     </script>
+
 </body>
 </html>
