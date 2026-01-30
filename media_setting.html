@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>미디어 설정</title>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <style>
+        /* --- 공통 스타일 --- */
+        :root {
+            --bg-color: #121212;
+            --bg-secondary: #1e1e1e;
+            --text-color: #ffffff;
+            --text-muted: #a0a0a0;
+            --accent-color: #ff4747;
+            --border-color: #333333;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); line-height: 1.5; height: 100vh; display: flex; flex-direction: column; }
+
+        /* 상단 네비게이션 */
+        .header-nav {
+            background: var(--bg-secondary);
+            padding: 10px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: space-between; font-size: 0.9rem;
+        }
+        .nav-left { display: flex; align-items: center; }
+        .step-list { display: flex; gap: 20px; list-style: none; margin-left: 20px; }
+        .step-item { color: var(--text-muted); cursor: pointer; position: relative; }
+        .step-item.active { color: var(--accent-color); font-weight: bold; }
+        .step-item.active::after { content:''; position:absolute; bottom:-14px; left:0; width:100%; height:2px; background:var(--accent-color); }
+
+        /* 파일 조작 버튼 */
+        .file-actions { display: flex; gap: 10px; }
+        .btn-file {
+            padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; cursor: pointer; border: 1px solid #444; background: #333; color: white;
+        }
+        .btn-file:hover { background: #444; }
+
+        .container { display: flex; flex: 1; overflow: hidden; }
+        .left-panel { flex: 1; padding: 20px; overflow-y: auto; border-right: 1px solid var(--border-color); max-width: 50%; }
+
+        /* 필터 탭 */
+        .filter-tabs { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .filter-pill {
+            padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; cursor: pointer;
+            border: 1px solid #444; background: transparent; color: #ccc; white-space: nowrap;
+        }
+        .filter-pill.active { background: #fff; color: #000; border-color: #fff; font-weight: bold; }
+
+        /* 안내 배너 */
+        .info-banner {
+            background: #2a2a2a; border-radius: 8px; padding: 20px; display: flex; align-items: center; gap: 20px; margin-bottom: 20px;
+        }
+        .info-bubble {
+            background: #fff; color: #000; padding: 10px 15px; border-radius: 12px; font-weight: bold; font-size: 0.9rem; position: relative;
+        }
+        .info-bubble span { color: #d32f2f; }
+        .info-text h4 { font-size: 0.95rem; margin-bottom: 5px; }
+        .info-text p { font-size: 0.8rem; color: #aaa; }
+
+        /* 이미지 설정 카드 */
+        .image-card {
+            background: #252525; border: 1px solid #3d3d3d; border-radius: 8px; padding: 20px; margin-bottom: 15px;
+        }
+        
+        /* 카드 헤더 */
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+        .img-preview-box { display: flex; gap: 15px; }
+        .img-thumbnail {
+            width: 80px; height: 80px; background: #333; border-radius: 6px;
+            background-size: cover; background-position: center;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="%23555" stroke-width="1"><rect width="24" height="24" fill="%23222"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23555">IMG</text></svg>');
+        }
+        .img-info { display: flex; flex-direction: column; justify-content: center; gap: 5px; }
+        .img-number { font-weight: bold; font-size: 1rem; }
+        .btn-tiny {
+            padding: 5px 10px; font-size: 0.75rem; border: 1px solid #555; background: #333; color: #fff; border-radius: 4px; cursor: pointer; margin-right: 5px;
+        }
+        .card-actions button { background: none; border: none; color: #666; cursor: pointer; margin-left: 8px; font-size: 1rem; }
+        .card-actions button:hover { color: #fff; }
+
+        /* 폼 요소 */
+        .form-section { margin-bottom: 20px; }
+        .label-row { margin-bottom: 8px; font-size: 0.9rem; font-weight: bold; }
+        .label-row span { color: var(--accent-color); }
+        .label-desc { font-size: 0.8rem; color: #888; margin-bottom: 8px; display: block; }
+        
+        .input-box, .textarea-box {
+            width: 100%; background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-color); padding: 12px; border-radius: 6px; font-size: 0.95rem;
+        }
+        
+        /* 태그 입력 스타일 */
+        .tag-input-container {
+            width: 100%; background: var(--bg-secondary); border: 1px solid var(--border-color); padding: 8px; border-radius: 6px; display: flex; flex-wrap: wrap; gap: 5px;
+        }
+        .tag-chip {
+            background: #333; padding: 4px 10px; border-radius: 15px; font-size: 0.8rem; display: flex; align-items: center; gap: 5px; border: 1px solid #444;
+        }
+
+        /* 이미지 추가 버튼 */
+        .add-image-btn {
+            width: 100%; height: 50px; background: transparent; border: 1px solid #444; border-radius: 8px; color: var(--text-color); font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+        }
+        .add-image-btn:hover { background: #252525; border-color: #666; }
+
+        /* --- 오른쪽 패널 --- */
+        .right-panel { flex: 1; background-color: #000; display: flex; flex-direction: column; position: relative; }
+        .preview-header { padding: 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; background: rgba(30, 30, 30, 0.8); }
+        .chat-area { flex: 1; display: flex; align-items: center; justify-content: center; color: #555; font-size: 0.9rem; }
+        .chat-input-area { padding: 20px; }
+        .chat-input-wrapper { background: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 12px; display: flex; align-items: center; justify-content: space-between; }
+        .send-btn { width: 30px; height: 30px; background: #fff; border-radius: 50%; border: none; cursor: pointer; }
+
+        /* 하단바 */
+        .bottom-nav { padding: 15px 20px; border-top: 1px solid var(--border-color); background: var(--bg-secondary); display: flex; justify-content: space-between; }
+        .btn-prev { background: #333; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+        .btn-next { background: var(--accent-color); color: white; border: none; padding: 10px 30px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <header class="header-nav">
+        <div class="nav-left">
+            <div style="font-weight:bold; font-size:1.1rem; margin-right:20px;">← 스토리 만들기</div>
+            <ul class="step-list">
+                <li class="step-item" onclick="saveAndGo('index.html')">프로필</li>
+                <li class="step-item" onclick="saveAndGo('story.html')">스토리 설정</li>
+                <li class="step-item" onclick="saveAndGo('start_setting.html')">시작 설정</li>
+                <li class="step-item" onclick="saveAndGo('stat_setting.html')">스탯 설정</li>
+                <li class="step-item active">미디어</li>
+            </ul>
+        </div>
+        <div class="file-actions">
+            <input type="file" id="jsonFileInput" accept=".json" style="display: none;" onchange="loadJsonFile(this)">
+            <button class="btn-file" onclick="document.getElementById('jsonFileInput').click()">📂 불러오기</button>
+            <button class="btn-file" onclick="saveJsonFile()">💾 저장하기</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <aside class="left-panel">
+            
+            <h2 style="font-size:1.1rem; font-weight:bold; margin-bottom:5px;">상황 이미지 <span style="font-size:0.8rem; font-weight:normal; color:#666;">?</span></h2>
+            <p style="font-size: 0.85rem; color: #888; margin-bottom: 20px;">상황에 어울리는 인물, 배경 등의 이미지를 등록해 보세요 (시작 설정별로 최대 50개)</p>
+
+            <div class="filter-tabs" id="filterTabs">
+                <button class="filter-pill active" onclick="filterImages('all')">전체</button>
+                </div>
+
+            <div class="info-banner">
+                <div class="info-bubble">
+                    {{img::<span>이미지 이름</span>}}<br>
+                    <span style="font-weight:normal; font-size:0.8rem; color:#333;">안녕하세요. 반가워요!</span>
+                </div>
+                <div class="info-text">
+                    <h4>상황 이미지를 채팅에 첨부해 보세요</h4>
+                    <p>코드 복사 버튼을 통해 프롤로그와 전개 예시에 넣을 수 있어요</p>
+                </div>
+            </div>
+
+            <div id="imageList"></div>
+
+            <button class="add-image-btn" onclick="addImageCard()">
+                + 상황 이미지 추가
+            </button>
+
+        </aside>
+
+        <main class="right-panel">
+            <div class="preview-header">
+                <span style="font-weight:bold;">← 채팅 미리보기</span>
+                <div style="background:#333; padding:5px 10px; border-radius:20px; font-size:0.8rem;">
+                    <span style="color:purple;">●</span> 슈퍼챗 2.0 ∨
+                </div>
+            </div>
+            <div class="chat-area">
+                <div style="text-align:center;">
+                    <p style="margin-bottom:10px;">이 대화는 AI로 생성된 가상의 이야기입니다</p>
+                    <div style="background:#1e1e1e; padding:15px; border-radius:8px; width:300px; margin:0 auto; text-align:left;">
+                        <span style="display:inline-block; width:15px; height:15px; background:#555; border-radius:50%; margin-right:10px;"></span>
+                        <span id="previewName" style="color:#888;">스토리 이름</span>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <div class="chat-input-wrapper">
+                    <div style="color:#666; font-size:0.9rem;">[이름, 캐릭터 설정 및 정보, 첫 메시지]를 입력해주세요<br><span style="font-size:1.2rem;">❄️</span></div>
+                    <button class="send-btn">▶</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer class="bottom-nav">
+        <button class="btn-prev" onclick="saveAndGo('stat_setting.html')">이전</button>
+        <button class="btn-next" onclick="saveAndGo('keyword_book.html')">다음</button>
+    </footer>
+
+    <script>
+        let globalData = {
+            startingSets: [{ name: "기본 설정", situationImages: [] }]
+        };
+        let currentFilter = 'all'; // 'all' or startSetIndex (0, 1, ...)
+
+        window.onload = function() {
+            const savedData = localStorage.getItem('storyData');
+            if (savedData) {
+                globalData = JSON.parse(savedData);
+                // 데이터 안전장치
+                if (!globalData.startingSets) globalData.startingSets = [{ name: "기본 설정", situationImages: [] }];
+                globalData.startingSets.forEach(set => {
+                    if (!set.situationImages) set.situationImages = [];
+                });
+
+                if (globalData.prompt && globalData.prompt.name) {
+                    document.getElementById('previewName').innerText = globalData.prompt.name;
+                }
+                
+                renderTabs();
+                renderImages();
+            }
+        };
+
+        // 1. 필터 탭 렌더링
+        function renderTabs() {
+            const container = document.getElementById('filterTabs');
+            // 전체 탭 + 각 시작 설정 탭
+            let html = `<button class="filter-pill ${currentFilter === 'all' ? 'active' : ''}" onclick="changeFilter('all')">전체 ${countAllImages()}</button>`;
+            
+            globalData.startingSets.forEach((set, index) => {
+                const count = set.situationImages ? set.situationImages.length : 0;
+                const activeClass = currentFilter === index ? 'active' : '';
+                html += `<button class="filter-pill ${activeClass}" onclick="changeFilter(${index})">${set.name} ${count}</button>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function countAllImages() {
+            return globalData.startingSets.reduce((acc, set) => acc + (set.situationImages ? set.situationImages.length : 0), 0);
+        }
+
+        function changeFilter(filter) {
+            currentFilter = filter;
+            renderTabs();
+            renderImages();
+        }
+
+        // 2. 이미지 카드 렌더링
+        function renderImages() {
+            const list = document.getElementById('imageList');
+            list.innerHTML = '';
+
+            globalData.startingSets.forEach((set, setIndex) => {
+                // 필터 적용
+                if (currentFilter !== 'all' && currentFilter !== setIndex) return;
+
+                if (set.situationImages) {
+                    set.situationImages.forEach((img, imgIndex) => {
+                        addImageCardUI(list, img, setIndex, imgIndex, set.name);
+                    });
+                }
+            });
+        }
+
+        // UI에 카드 추가 (HTML 생성)
+        function addImageCardUI(container, data, setIndex, imgIndex, setName) {
+            const keyword = data.keyword || "";
+            const hint = data.hint || "";
+            const url = data.url || "";
+            const bgStyle = url ? `background-image: url('${url}')` : "";
+
+            const div = document.createElement('div');
+            div.className = 'image-card';
+            // 데이터 속성으로 인덱스 저장 (수정 시 찾기 위해)
+            div.dataset.setIndex = setIndex;
+            div.dataset.imgIndex = imgIndex;
+
+            div.innerHTML = `
+                <div class="card-header">
+                    <div class="img-preview-box">
+                        <div class="img-thumbnail" style="${bgStyle}"></div>
+                        <div class="img-info">
+                            <span class="img-number">${imgIndex + 1}</span>
+                            <div>
+                                <button class="btn-tiny" onclick="promptImageUrl(this)">이미지 변경</button>
+                                <button class="btn-tiny" style="background:transparent; border:1px solid #555;" onclick="copyCode(this)">코드 복사</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <button title="삭제" onclick="removeImage(this)">🗑️</button>
+                        <button title="접기">^</button>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="label-row">상황 <span>*</span></div>
+                    <span class="label-desc">작성하신 상황이 되면 AI가 자동으로 이미지를 띄워드려요</span>
+                    <textarea class="textarea-box img-keyword" style="height:80px;" placeholder="예) 고양이 미뉴가 놀라는 상황">${keyword}</textarea>
+                </div>
+
+                <div class="form-section">
+                    <div class="label-row">이미지 적용 대상 <span>*</span></div>
+                    <div class="tag-input-container">
+                        <div class="tag-chip">${setName}</div>
+                    </div>
+                </div>
+
+                <div class="form-section" style="margin-bottom:0;">
+                    <div class="label-row">이미지 힌트</div>
+                    <span class="label-desc">유저에게 보여질 이미지 해금 힌트를 작성해주세요</span>
+                    <input type="text" class="input-box img-hint" value="${hint}" placeholder="예) 뭐... 뭐냥?!">
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        // 3. 새 이미지 추가
+        function addImageCard() {
+            // 현재 필터가 'all'이면 첫 번째 세트에, 아니면 해당 세트에 추가
+            const targetSetIndex = currentFilter === 'all' ? 0 : currentFilter;
+            
+            if (!globalData.startingSets[targetSetIndex].situationImages) {
+                globalData.startingSets[targetSetIndex].situationImages = [];
+            }
+
+            // 빈 데이터 추가
+            globalData.startingSets[targetSetIndex].situationImages.push({
+                url: "", keyword: "", hint: ""
+            });
+
+            saveToLocal(); // 저장
+            renderTabs(); // 탭 카운트 갱신
+            renderImages(); // 리스트 갱신
+        }
+
+        // 이미지 삭제
+        function removeImage(btn) {
+            const card = btn.closest('.image-card');
+            const sIdx = parseInt(card.dataset.setIndex);
+            const iIdx = parseInt(card.dataset.imgIndex);
+
+            globalData.startingSets[sIdx].situationImages.splice(iIdx, 1);
+            saveToLocal();
+            renderTabs();
+            renderImages();
+        }
+
+        // 이미지 URL 입력 (간이 구현)
+        function promptImageUrl(btn) {
+            const url = prompt("이미지 URL을 입력하세요:");
+            if (url) {
+                const card = btn.closest('.image-card');
+                const sIdx = parseInt(card.dataset.setIndex);
+                const iIdx = parseInt(card.dataset.imgIndex);
+                
+                globalData.startingSets[sIdx].situationImages[iIdx].url = url;
+                saveToLocal();
+                renderImages();
+            }
+        }
+
+        // 저장 로직 (입력값 -> globalData 동기화)
+        // 주의: 텍스트에어리어/인풋 변경 시 실시간 저장이 아님. 
+        // 페이지 이동/저장 버튼 클릭 시 전체 카드 훑어서 업데이트해야 함.
+        function updateGlobalDataFromForm() {
+            const cards = document.querySelectorAll('.image-card');
+            cards.forEach(card => {
+                const sIdx = parseInt(card.dataset.setIndex);
+                const iIdx = parseInt(card.dataset.imgIndex);
+                
+                // 데이터가 유효한지 확인
+                if (globalData.startingSets[sIdx] && globalData.startingSets[sIdx].situationImages[iIdx]) {
+                    const imgObj = globalData.startingSets[sIdx].situationImages[iIdx];
+                    imgObj.keyword = card.querySelector('.img-keyword').value;
+                    imgObj.hint = card.querySelector('.img-hint').value;
+                }
+            });
+            saveToLocal();
+        }
+
+        function saveToLocal() {
+            localStorage.setItem('storyData', JSON.stringify(globalData));
+        }
+
+        // 공통 파일 로드/저장/이동
+        function loadJsonFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const json = JSON.parse(e.target.result);
+                    globalData = { ...globalData, ...json };
+                    saveToLocal();
+                    renderTabs();
+                    renderImages();
+                    alert('데이터를 불러왔습니다.');
+                } catch (err) { alert('파일 오류'); }
+            };
+            reader.readAsText(file);
+        }
+
+        function saveJsonFile() {
+            updateGlobalDataFromForm();
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(globalData, null, 2));
+            const node = document.createElement('a');
+            node.setAttribute("href", dataStr);
+            node.setAttribute("download", "story_data.json");
+            document.body.appendChild(node);
+            node.click();
+            node.remove();
+        }
+
+        function saveAndGo(url) {
+            updateGlobalDataFromForm();
+            location.href = url;
+        }
+
+        function copyCode(btn) {
+            // {{img::이름}} 형식 복사 (여기서는 keyword를 이름으로 가정하거나 별도 필드 필요)
+            // 임시로 keyword를 복사
+            const card = btn.closest('.image-card');
+            const key = card.querySelector('.img-keyword').value || "이미지";
+            const code = `{{img::${key}}}`;
+            navigator.clipboard.writeText(code).then(() => alert(`코드가 복사되었습니다: ${code}`));
+        }
+    </script>
+</body>
+</html>
