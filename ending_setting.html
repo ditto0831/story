@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>엔딩 설정</title>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <style>
+        /* --- 공통 스타일 --- */
+        :root {
+            --bg-color: #121212;
+            --bg-secondary: #1e1e1e;
+            --text-color: #ffffff;
+            --text-muted: #a0a0a0;
+            --accent-color: #ff4747;
+            --border-color: #333333;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); line-height: 1.5; height: 100vh; display: flex; flex-direction: column; }
+
+        /* 상단 네비게이션 */
+        .header-nav {
+            background: var(--bg-secondary);
+            padding: 10px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: space-between; font-size: 0.9rem;
+        }
+        .nav-left { display: flex; align-items: center; }
+        .step-list { display: flex; gap: 20px; list-style: none; margin-left: 20px; }
+        .step-item { color: var(--text-muted); cursor: pointer; position: relative; }
+        .step-item.active { color: var(--accent-color); font-weight: bold; }
+        .step-item.active::after { content:''; position:absolute; bottom:-14px; left:0; width:100%; height:2px; background:var(--accent-color); }
+
+        /* 파일 조작 버튼 */
+        .file-actions { display: flex; gap: 10px; }
+        .btn-file {
+            padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; cursor: pointer; border: 1px solid #444; background: #333; color: white;
+        }
+        .btn-file:hover { background: #444; }
+
+        .container { display: flex; flex: 1; overflow: hidden; }
+        .left-panel { flex: 1; padding: 20px; overflow-y: auto; border-right: 1px solid var(--border-color); max-width: 50%; }
+
+        /* 필터 탭 (시작 설정 전환용) */
+        .filter-tabs { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .filter-pill {
+            padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; cursor: pointer;
+            border: 1px solid #444; background: transparent; color: #ccc; white-space: nowrap;
+        }
+        .filter-pill.active { background: #fff; color: #000; border-color: #fff; font-weight: bold; }
+
+
+        /* 폼 요소 공통 */
+        .form-section { margin-bottom: 25px; }
+        .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .label-title { font-weight: bold; font-size: 0.9rem; }
+        .label-title span { color: var(--accent-color); }
+        .label-desc { font-size: 0.8rem; color: #888; margin-bottom: 8px; display: block; }
+        
+        .input-box, .textarea-box {
+            width: 100%; background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-color); padding: 12px; border-radius: 6px; font-size: 0.95rem;
+        }
+        .btn-small { background: #333; color: #fff; border: 1px solid #444; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; }
+        .btn-small.red-outline { border: 1px solid var(--accent-color); color: var(--accent-color); background: transparent; }
+
+        /* 엔딩 제공 시점 */
+        .turn-input-row { display: flex; align-items: center; gap: 10px; }
+        .turn-input { width: 80px; text-align: right; }
+
+        /* 엔딩 카드 스타일 */
+        .ending-card {
+            background: #252525; border: 1px solid #3d3d3d; border-radius: 8px; padding: 20px; margin-bottom: 15px;
+        }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #3d3d3d; }
+        .card-title { font-weight: bold; font-size: 1rem; border-left: 3px solid #666; padding-left: 10px; }
+        .card-actions button { background: none; border: none; color: #666; cursor: pointer; margin-left: 10px; font-size: 1rem; }
+        .card-actions button:hover { color: #fff; }
+
+        /* 스탯 추가하기 버튼 */
+        .stat-add-bar {
+            background: #333; padding: 10px; border-radius: 6px; text-align: center; font-size: 0.9rem; color: #ccc; cursor: pointer; margin-top: 5px;
+        }
+        .stat-add-bar:hover { background: #444; color: #fff; }
+
+        /* 엔딩 추가 버튼 */
+        .add-btn {
+            width: 100%; padding: 15px; background: transparent; border: 1px solid #444; border-radius: 6px; color: var(--text-muted); cursor: pointer; transition: 0.2s;
+        }
+        .add-btn:hover { background: #333; color: #fff; }
+
+        /* --- 오른쪽 패널 (에필로그 미리보기) --- */
+        .right-panel { flex: 1; background-color: #000; display: flex; flex-direction: column; }
+        .preview-header { padding: 15px; border-bottom: 1px solid #333; font-weight: bold; font-size: 1rem; color: #ccc; background: rgba(30, 30, 30, 0.8); }
+        
+        .epilogue-area {
+            flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 40px; overflow-y: auto;
+        }
+        
+        .epilogue-preview-card {
+            width: 100%; max-width: 500px; background: #1e1e1e; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        .ep-header {
+            background: #333; color: #aaa; padding: 10px 15px; font-size: 0.8rem; font-weight: bold; letter-spacing: 1px;
+        }
+        .ep-body { padding: 20px; }
+        .ep-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 10px; color: #fff; }
+        .ep-desc { font-size: 0.9rem; color: #ccc; line-height: 1.6; white-space: pre-wrap; }
+
+        /* 하단바 */
+        .bottom-nav { padding: 15px 20px; border-top: 1px solid var(--border-color); background: var(--bg-secondary); display: flex; justify-content: space-between; }
+        .btn-prev { background: #333; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+        .btn-next { background: var(--accent-color); color: white; border: none; padding: 10px 30px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <header class="header-nav">
+        <div class="nav-left">
+            <div style="font-weight:bold; font-size:1.1rem; margin-right:20px;">← 스토리 만들기</div>
+            <ul class="step-list">
+                <li class="step-item" onclick="saveAndGo('index.html')">프로필</li>
+                <li class="step-item" onclick="saveAndGo('story.html')">스토리 설정</li>
+                <li class="step-item" onclick="saveAndGo('start_setting.html')">시작 설정</li>
+                <li class="step-item" onclick="saveAndGo('stat_setting.html')">스탯 설정</li>
+                <li class="step-item" onclick="saveAndGo('media_setting.html')">미디어</li>
+                <li class="step-item" onclick="saveAndGo('keyword_book.html')">키워드북</li>
+                <li class="step-item active">엔딩 설정</li>
+                <li class="step-item">등록</li>
+            </ul>
+        </div>
+        <div class="file-actions">
+            <input type="file" id="jsonFileInput" accept=".json" style="display: none;" onchange="loadJsonFile(this)">
+            <button class="btn-file" onclick="document.getElementById('jsonFileInput').click()">📂 불러오기</button>
+            <button class="btn-file" onclick="saveJsonFile()">💾 저장하기</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <aside class="left-panel">
+            
+            <div style="margin-bottom: 20px;">
+                <h2 style="font-size:1.1rem; margin-bottom:5px;">엔딩 설정</h2>
+                <p style="font-size:0.85rem; color:#888;">각 시작 설정에 따른 엔딩을 설정해보세요. (시작설정 별 최대 10개)</p>
+            </div>
+
+            <div class="filter-tabs" id="filterTabs">
+                </div>
+
+            <div class="form-section">
+                <div class="label-row">
+                    <span class="label-title">엔딩 제공 시점 <span>*</span></span>
+                </div>
+                <span class="label-desc">해당 시점 이후 AI가 상황을 판단해 엔딩을 보여드려요 (최소 10턴 이상)</span>
+                <div class="turn-input-row">
+                    <input type="number" id="endingTurnInput" class="input-box turn-input" value="30">
+                    <span style="font-size:0.9rem;">턴 이상</span>
+                </div>
+            </div>
+
+            <div id="endingList"></div>
+
+            <button class="add-btn" onclick="addEndingCard()">+ 엔딩 추가</button>
+
+        </aside>
+
+        <main class="right-panel">
+            <div class="preview-header">미리보기</div>
+            <div class="epilogue-area">
+                <div class="epilogue-preview-card">
+                    <div class="ep-header">EPILOGUE</div>
+                    <div class="ep-body">
+                        <div class="ep-title" id="previewTitle">EPILOGUE</div>
+                        <div class="ep-desc" id="previewDesc">스토리의 에필로그를 작성해주세요</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer class="bottom-nav">
+        <button class="btn-prev" onclick="saveAndGo('keyword_book.html')">이전</button>
+        <button class="btn-next" onclick="saveAndGo('register.html')">다음</button>
+    </footer>
+
+    <script>
+        let globalData = {
+            startingSets: [{ name: "기본 설정", endings: [], endingProvideTurn: 30 }]
+        };
+        let currentSetIndex = 0;
+
+        window.onload = function() {
+            const savedData = localStorage.getItem('storyData');
+            if (savedData) {
+                globalData = JSON.parse(savedData);
+                // 데이터 안전장치
+                if (!globalData.startingSets) globalData.startingSets = [{ name: "기본 설정", endings: [], endingProvideTurn: 30 }];
+                globalData.startingSets.forEach(set => {
+                    if (!set.endings) set.endings = [];
+                    if (!set.endingProvideTurn) set.endingProvideTurn = 30;
+                });
+                
+                renderTabs();
+                renderEndings();
+            }
+        };
+
+        // 1. 탭 렌더링
+        function renderTabs() {
+            const container = document.getElementById('filterTabs');
+            let html = '';
+            
+            globalData.startingSets.forEach((set, index) => {
+                const count = set.endings ? set.endings.length : 0;
+                const activeClass = currentSetIndex === index ? 'active' : '';
+                html += `<button class="filter-pill ${activeClass}" onclick="changeSet(${index})">${set.name} ${count}</button>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function changeSet(index) {
+            updateCurrentSetData(); // 변경 전 저장
+            currentSetIndex = index;
+            renderTabs();
+            renderEndings();
+        }
+
+        // 2. 엔딩 렌더링
+        function renderEndings() {
+            const set = globalData.startingSets[currentSetIndex];
+            
+            // 턴 수 입력
+            document.getElementById('endingTurnInput').value = set.endingProvideTurn;
+
+            // 엔딩 카드 리스트
+            const list = document.getElementById('endingList');
+            list.innerHTML = '';
+
+            if (set.endings) {
+                set.endings.forEach((ending, index) => {
+                    addEndingCardUI(list, ending, index);
+                });
+            }
+            
+            // 미리보기 업데이트 (첫 번째 엔딩 기준)
+            if (set.endings && set.endings.length > 0) {
+                updatePreview(set.endings[0].name, set.endings[0].epilogue);
+            } else {
+                updatePreview("EPILOGUE", "스토리의 에필로그를 작성해주세요");
+            }
+        }
+
+        function addEndingCardUI(container, data, index) {
+            const name = data.name || "";
+            const condition = data.condition || "";
+            const epilogue = data.epilogue || "";
+            const hint = data.hint || "";
+
+            const div = document.createElement('div');
+            div.className = 'ending-card';
+            div.dataset.index = index;
+
+            div.innerHTML = `
+                <div class="card-header">
+                    <span class="card-title">엔딩 ${index + 1}</span>
+                    <div class="card-actions">
+                        <button title="삭제" onclick="removeEnding(this)">🗑️</button>
+                        <button title="접기">^</button>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="label-row"><span class="label-title">엔딩 이름 <span>*</span></span></div>
+                    <input type="text" class="input-box ed-name" value="${name}" placeholder="예) 미뉴의 해피엔딩" oninput="livePreview(this, 'title')">
+                </div>
+
+                <div class="form-section">
+                    <div class="label-row"><span class="label-title">엔딩 기본 조건 <span>*</span></span></div>
+                    <textarea class="textarea-box ed-condition" style="height:80px;" placeholder="엔딩 조건을 묘사해 주세요">${condition}</textarea>
+                </div>
+
+                <div class="form-section">
+                    <div class="label-row">
+                        <span class="label-title">에필로그 <span>*</span></span>
+                        <button class="btn-small red-outline" onclick="alert('서버 연결 필요')">자동생성</button>
+                    </div>
+                    <textarea class="textarea-box ed-epilogue" style="height:100px;" placeholder="에필로그 내용을 작성해 주세요" oninput="livePreview(this, 'desc')">${epilogue}</textarea>
+                </div>
+
+                <div class="form-section">
+                    <div class="label-row"><span class="label-title">엔딩 세부 조건</span></div>
+                    <span class="label-desc">※ 턴 수와 관계없이 충족 시 엔딩 노출</span>
+                    <div class="stat-add-bar" onclick="alert('스탯 선택 팝업 (구현 예정)')">스탯 추가하기 ></div>
+                </div>
+
+                <div class="form-section" style="margin-bottom:0;">
+                    <div class="label-row"><span class="label-title">엔딩 힌트</span></div>
+                    <input type="text" class="input-box ed-hint" value="${hint}" placeholder="예) 익숙한 소리가 들린다냥..!">
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        // 3. 엔딩 추가/삭제
+        function addEndingCard() {
+            const set = globalData.startingSets[currentSetIndex];
+            if (!set.endings) set.endings = [];
+            
+            set.endings.push({ name: "", condition: "", epilogue: "", hint: "" });
+            
+            saveToLocal();
+            renderTabs();
+            renderEndings();
+        }
+
+        function removeEnding(btn) {
+            const card = btn.closest('.ending-card');
+            const idx = parseInt(card.dataset.index);
+            
+            globalData.startingSets[currentSetIndex].endings.splice(idx, 1);
+            saveToLocal();
+            renderTabs();
+            renderEndings();
+        }
+
+        // 4. 미리보기 실시간 반영
+        function livePreview(input, type) {
+            const val = input.value;
+            if (type === 'title') document.getElementById('previewTitle').innerText = val || "EPILOGUE";
+            if (type === 'desc') document.getElementById('previewDesc').innerText = val || "스토리의 에필로그를 작성해주세요";
+        }
+        
+        function updatePreview(title, desc) {
+            document.getElementById('previewTitle').innerText = title || "EPILOGUE";
+            document.getElementById('previewDesc').innerText = desc || "스토리의 에필로그를 작성해주세요";
+        }
+
+        // 5. 저장 로직
+        function updateCurrentSetData() {
+            const set = globalData.startingSets[currentSetIndex];
+            
+            // 턴 수 저장
+            set.endingProvideTurn = document.getElementById('endingTurnInput').value;
+
+            // 카드 내용 저장
+            const cards = document.querySelectorAll('.ending-card');
+            cards.forEach(card => {
+                const idx = parseInt(card.dataset.index);
+                if (set.endings[idx]) {
+                    set.endings[idx].name = card.querySelector('.ed-name').value;
+                    set.endings[idx].condition = card.querySelector('.ed-condition').value;
+                    set.endings[idx].epilogue = card.querySelector('.ed-epilogue').value;
+                    set.endings[idx].hint = card.querySelector('.ed-hint').value;
+                }
+            });
+            saveToLocal();
+        }
+
+        function saveToLocal() {
+            localStorage.setItem('storyData', JSON.stringify(globalData));
+        }
+
+        // 공통 파일 로드/저장/이동
+        function loadJsonFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const json = JSON.parse(e.target.result);
+                    globalData = { ...globalData, ...json };
+                    currentSetIndex = 0;
+                    saveToLocal();
+                    renderTabs();
+                    renderEndings();
+                    alert('데이터를 불러왔습니다.');
+                } catch (err) { alert('파일 오류'); }
+            };
+            reader.readAsText(file);
+        }
+
+        function saveJsonFile() {
+            updateCurrentSetData();
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(globalData, null, 2));
+            const node = document.createElement('a');
+            node.setAttribute("href", dataStr);
+            node.setAttribute("download", "story_data.json");
+            document.body.appendChild(node);
+            node.click();
+            node.remove();
+        }
+
+        function saveAndGo(url) {
+            updateCurrentSetData();
+            location.href = url;
+        }
+    </script>
+</body>
+</html>
