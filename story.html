@@ -6,136 +6,334 @@
     <title>스토리 설정</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
-        /* (기존 CSS 스타일 동일 - 생략 가능하지만 복사 편의를 위해 유지) */
-        :root { --bg-color: #121212; --bg-secondary: #1e1e1e; --text-color: #ffffff; --text-muted: #a0a0a0; --accent-color: #ff4747; --border-color: #333333; }
+        /* --- 1페이지와 공통 스타일 --- */
+        :root {
+            --bg-color: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-tertiary: #2c2c2c;
+            --text-color: #ffffff;
+            --text-muted: #a0a0a0;
+            --accent-color: #ff4747;
+            --border-color: #333333;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
         body { background-color: var(--bg-color); color: var(--text-color); line-height: 1.5; height: 100vh; display: flex; flex-direction: column; }
-        .header-nav { background: var(--bg-secondary); padding: 10px 20px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; font-size: 0.9rem; justify-content: space-between; }
-        .nav-left { display: flex; align-items: center; }
+
+        /* --- 레이아웃 구조 --- */
+        .header-nav {
+            background: var(--bg-secondary);
+            padding: 10px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between; /* 양끝 정렬 수정 */
+            font-size: 0.9rem;
+        }
+        .nav-left { display: flex; align-items: center; } 
         .step-list { display: flex; gap: 20px; list-style: none; margin-left: 20px; }
         .step-item { color: var(--text-muted); cursor: pointer; position: relative; }
         .step-item.active { color: var(--accent-color); font-weight: bold; }
         .step-item.active::after { content:''; position:absolute; bottom:-14px; left:0; width:100%; height:2px; background:var(--accent-color); }
+
+        /* 파일 조작 버튼 (헤더 우측) */
+        .file-actions { display: flex; gap: 10px; }
+        .btn-file {
+            padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; cursor: pointer; border: 1px solid #444; background: #333; color: white;
+        }
+        .btn-file:hover { background: #444; }
+
         .container { display: flex; flex: 1; overflow: hidden; }
-        .left-panel { flex: 1; padding: 20px; overflow-y: auto; border-right: 1px solid var(--border-color); max-width: 50%; }
+
+        /* --- 왼쪽 패널 (에디터) --- */
+        .left-panel {
+            flex: 1; padding: 20px; overflow-y: auto;
+            border-right: 1px solid var(--border-color); max-width: 50%;
+        }
+
         .section-box { margin-bottom: 30px; }
         .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .label-title { font-weight: bold; font-size: 1rem; }
         .label-title span { color: var(--accent-color); }
-        .btn-small { background: #333; color: #fff; border: 1px solid #444; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; }
+        
+        .btn-small {
+            background: #333; color: #fff; border: 1px solid #444;
+            padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; cursor: pointer;
+        }
         .btn-small.red-outline { border: 1px solid var(--accent-color); color: var(--accent-color); background: transparent; }
-        .input-box, .textarea-box { width: 100%; background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-color); padding: 12px; border-radius: 6px; font-size: 0.95rem; }
-        .textarea-box { height: 300px; resize: vertical; } /* 높이 조정 */
-        .right-panel { flex: 1; background-color: #000; display: flex; flex-direction: column; position: relative; }
-        .preview-header { padding: 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; background: rgba(30, 30, 30, 0.8); }
+
+        .input-box, .textarea-box, .select-box {
+            width: 100%; background: var(--bg-secondary); border: 1px solid var(--border-color);
+            color: var(--text-color); padding: 12px; border-radius: 6px; font-size: 0.95rem;
+        }
+        .textarea-box { height: 300px; resize: vertical; line-height: 1.6; }
+
+        /* 예시 입력 섹션 */
+        .example-list { display: flex; flex-direction: column; gap: 15px; }
+        .example-card {
+            background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px;
+        }
+        .example-row { margin-bottom: 15px; }
+        .example-label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; display: block; }
+        
+        /* --- 오른쪽 패널 (채팅 미리보기) --- */
+        .right-panel {
+            flex: 1; background-color: #000; display: flex; flex-direction: column; position: relative;
+        }
+        .preview-header {
+            padding: 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; background: rgba(30, 30, 30, 0.8);
+        }
+        .toggle-btn { background: #333; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; display: flex; align-items: center; gap: 5px; }
+        
         .chat-area { flex: 1; display: flex; align-items: center; justify-content: center; color: #555; font-size: 0.9rem; }
         .chat-input-area { padding: 20px; background: transparent; }
-        .chat-input-wrapper { background: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 12px; display: flex; align-items: center; justify-content: space-between; }
+        .chat-input-wrapper {
+            background: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 12px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .chat-placeholder { color: #666; font-size: 0.9rem; }
         .send-btn { width: 30px; height: 30px; background: #fff; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .bottom-nav { padding: 15px 20px; border-top: 1px solid var(--border-color); background: var(--bg-secondary); display: flex; justify-content: space-between; }
+
+        /* --- 하단 네비게이션 버튼 (고정) --- */
+        .bottom-nav {
+            padding: 15px 20px; border-top: 1px solid var(--border-color); background: var(--bg-secondary); display: flex; justify-content: space-between;
+        }
         .btn-prev { background: #333; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
         .btn-next { background: var(--accent-color); color: white; border: none; padding: 10px 30px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        
-        /* JSON 저장/불러오기 버튼 스타일 */
-        .header-actions { display: flex; gap: 10px; }
-        .btn-header { padding: 5px 10px; font-size: 0.8rem; background: #333; border: 1px solid #555; color: #ccc; border-radius: 4px; cursor: pointer; }
-        .btn-header:hover { background: #444; color: #fff; }
+
     </style>
 </head>
 <body>
+
     <header class="header-nav">
         <div class="nav-left">
             <div style="font-weight:bold; font-size:1.1rem; margin-right:20px;">← 스토리 만들기</div>
             <ul class="step-list">
-                <li class="step-item">프로필</li>
+                <li class="step-item" onclick="saveAndGo('index.html')">프로필</li>
                 <li class="step-item active">스토리 설정</li>
-                <li class="step-item">시작 설정</li>
-                <li class="step-item">스탯 설정</li>
+                <li class="step-item" onclick="saveAndGo('start_setting.html')">시작 설정</li>
+                <li class="step-item" onclick="saveAndGo('stat_setting.html')">스탯 설정</li>
                 <li class="step-item">미디어</li>
             </ul>
         </div>
-        <div class="header-actions">
-            <button class="btn-header" onclick="saveData()">💾 저장</button>
+        <div class="file-actions">
+            <input type="file" id="jsonFileInput" accept=".json" style="display: none;" onchange="loadJsonFile(this)">
+            <button class="btn-file" onclick="document.getElementById('jsonFileInput').click()">📂 불러오기</button>
+            <button class="btn-file" onclick="saveJsonFile()">💾 저장하기</button>
         </div>
     </header>
 
     <div class="container">
         <aside class="left-panel">
+            
             <div class="section-box">
                 <div class="label-row">
                     <span class="label-title">프롬프트 템플릿 <span>*</span></span>
                 </div>
-                <select id="promptTemplate" class="input-box">
-                    <option value="custom">✨ 제작자 커스텀</option>
-                    <option value="basic">기본 프롬프트</option>
+                <select class="select-box" id="templateSelect">
+                    <option value="custom">✨ 기본 프롬프트 (제작자 커스텀)</option>
+                    <option value="free">자유 모드</option>
                 </select>
             </div>
 
             <div class="section-box">
                 <div class="label-row">
                     <span class="label-title">스토리 설정 및 정보 <span>*</span></span>
-                    <button class="btn-small red-outline">자동 생성</button>
+                    <button class="btn-small red-outline" onclick="alert('AI 자동생성 기능은 서버 연결이 필요합니다.')">자동 생성</button>
                 </div>
-                <p style="font-size:0.8rem; color:#888; margin-bottom:10px;">세계관, 설정, 등장인물 외모, 성격, 말투 등 상세 정보를 입력해 주세요</p>
-                <textarea id="customPrompt" class="textarea-box" placeholder="스토리 설정을 입력하세요"></textarea>
+                <p style="font-size:0.8rem; color:#888; margin-bottom:10px;">세계관, 설정, 등장인물 외모, 성격, 말투 등 스토리의 더 자세한 정보를 입력해 주세요</p>
+                <textarea id="customPromptInput" class="textarea-box" placeholder="예) #세계관&#13;&#10;2050년 사이버펑크 서울...&#13;&#10;&#13;&#10;#캐릭터&#13;&#10;이름: 김철수..."></textarea>
+            </div>
+
+            <div class="section-box">
+                <div class="label-row" style="background:#252525; padding:10px; border-radius:6px; margin-bottom:0; cursor:pointer;">
+                    <span class="label-title" style="font-size:0.9rem;">고급 설정 ∨</span>
+                </div>
+            </div>
+
+            <div class="section-box">
+                <div class="label-row">
+                    <span class="label-title">전개 예시</span>
+                    <div>
+                        <button class="btn-small red-outline">전체 자동 생성</button>
+                        <button class="btn-small" onclick="addExampleCard()">예시 추가</button>
+                    </div>
+                </div>
+                <p style="font-size:0.8rem; color:#888; margin-bottom:10px;">전개 예시를 입력해서 스토리의 완성도를 높여보세요.</p>
+
+                <div id="exampleList" class="example-list">
+                    </div>
             </div>
         </aside>
 
         <main class="right-panel">
             <div class="preview-header">
-                <span style="font-weight:bold;">채팅 미리보기</span>
-                <div style="background:#333; padding:5px 10px; border-radius:20px; font-size:0.8rem;">● 슈퍼챗 2.0 ∨</div>
+                <span style="font-weight:bold;">← 채팅 미리보기</span>
+                <div class="toggle-btn">
+                    <span style="width:10px; height:10px; background:purple; border-radius:50%;"></span>
+                    슈퍼챗 2.0 ∨
+                </div>
             </div>
+
             <div class="chat-area">
-                <p>미리보기 화면입니다.</p>
+                <div style="text-align:center;">
+                    <p style="margin-bottom:10px;">이 대화는 AI로 생성된 가상의 이야기입니다</p>
+                    <div style="background:#1e1e1e; padding:15px; border-radius:8px; width:300px; margin:0 auto; text-align:left;">
+                        <span style="display:inline-block; width:15px; height:15px; background:#555; border-radius:50%; margin-right:10px;"></span>
+                        <span id="previewName" style="color:#888;">스토리 이름</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <div class="chat-input-wrapper">
+                    <div class="chat-placeholder">
+                        [이름, 캐릭터 설정 및 정보, 첫 메시지]를 입력해주세요<br>
+                        <span style="font-size:1.2rem;">❄️</span>
+                    </div>
+                    <button class="send-btn">▶</button>
+                </div>
             </div>
         </main>
     </div>
 
     <footer class="bottom-nav">
-        <button class="btn-prev" onclick="goPage('index.html')">이전</button>
-        <button class="btn-next" onclick="goPage('start_setting.html')">다음</button>
+        <button class="btn-prev" onclick="saveAndGo('index.html')">이전</button>
+        <button class="btn-next" onclick="saveAndGo('start_setting.html')">다음</button>
     </footer>
 
     <script>
-        let globalData = {};
-
-        // 페이지 로드 시 데이터 불러오기
-        window.onload = function() {
-            const saved = localStorage.getItem('storyData');
-            if (saved) {
-                globalData = JSON.parse(saved);
-                loadToForm();
+        // 전역 데이터 객체
+        let globalData = {
+            prompt: {
+                customPrompt: "",
+                chatExamples: [] // 예시 대화 배열
             }
         };
 
-        function loadToForm() {
-            if (globalData.prompt) {
-                // 커스텀 프롬프트 (story setting)
-                if (globalData.prompt.customPrompt) {
-                    document.getElementById('customPrompt').value = globalData.prompt.customPrompt;
-                }
-                // 템플릿
-                if (globalData.prompt.promptTemplate && globalData.prompt.promptTemplate.template) {
-                    document.getElementById('promptTemplate').value = globalData.prompt.promptTemplate.template;
-                }
+        // 페이지 로드 시 데이터 불러오기
+        window.onload = function() {
+            const savedData = localStorage.getItem('storyData');
+            if (savedData) {
+                globalData = JSON.parse(savedData);
+                // 데이터 구조 안전장치
+                if (!globalData.prompt) globalData.prompt = {};
+                if (!globalData.prompt.chatExamples) globalData.prompt.chatExamples = [];
+                
+                applyDataToForm();
+            } else {
+                // 데이터가 없으면 빈 카드 하나 생성
+                addExampleCard(); 
+            }
+        };
+
+        // 1. 화면에 데이터 뿌리기
+        function applyDataToForm() {
+            // 스토리 설정 (JSON의 customPrompt)
+            if (globalData.prompt.customPrompt) {
+                document.getElementById('customPromptInput').value = globalData.prompt.customPrompt;
+            }
+
+            // 미리보기 이름 (1페이지에서 설정한 이름)
+            if (globalData.prompt.name) {
+                document.getElementById('previewName').innerText = globalData.prompt.name;
+            }
+
+            // 전개 예시 (chatExamples)
+            const list = document.getElementById('exampleList');
+            list.innerHTML = ''; // 초기화
+
+            if (globalData.prompt.chatExamples && globalData.prompt.chatExamples.length > 0) {
+                globalData.prompt.chatExamples.forEach((ex, index) => {
+                    addExampleCard(ex.user || '', ex.bot || '');
+                });
+            } else {
+                addExampleCard(); // 없으면 빈 카드 하나
             }
         }
 
-        function saveData() {
-            if (!globalData.prompt) globalData.prompt = {};
-            
-            globalData.prompt.customPrompt = document.getElementById('customPrompt').value;
-            // 템플릿 값 저장
-            const templateVal = document.getElementById('promptTemplate').value;
-            if(!globalData.prompt.promptTemplate) globalData.prompt.promptTemplate = {};
-            globalData.prompt.promptTemplate.template = templateVal;
+        // 2. 전개 예시 카드 추가 함수 (UI 동적 생성)
+        function addExampleCard(userVal = '', botVal = '') {
+            const list = document.getElementById('exampleList');
+            const div = document.createElement('div');
+            div.className = 'example-card';
+            div.innerHTML = `
+                <div class="label-row">
+                    <span style="font-weight:bold; font-size:0.9rem;">👤 유저 / 🤖 봇</span>
+                    <button class="btn-small" onclick="removeExampleCard(this)">삭제</button>
+                </div>
+                <div class="example-row">
+                    <span class="example-label">입력 예시 (User)</span>
+                    <input type="text" class="input-box ex-user" style="padding:10px;" placeholder="유저가 할 법한 말" value="${userVal}">
+                </div>
+                <div class="example-row">
+                    <span class="example-label">출력 예시 (Bot)</span>
+                    <textarea class="input-box ex-bot" style="padding:10px; height:80px; resize:vertical;" placeholder="캐릭터의 말투와 반응">${botVal}</textarea>
+                </div>
+            `;
+            list.appendChild(div);
+        }
 
+        // 예시 카드 삭제
+        function removeExampleCard(btn) {
+            const card = btn.closest('.example-card');
+            card.remove();
+        }
+
+        // 3. 현재 화면 데이터를 전역 객체에 저장
+        function updateGlobalDataFromForm() {
+            // 스토리 설정 저장
+            if (!globalData.prompt) globalData.prompt = {};
+            globalData.prompt.customPrompt = document.getElementById('customPromptInput').value;
+
+            // 전개 예시 저장
+            const cards = document.querySelectorAll('.example-card');
+            const newExamples = [];
+            cards.forEach(card => {
+                const u = card.querySelector('.ex-user').value;
+                const b = card.querySelector('.ex-bot').value;
+                if (u || b) { // 내용이 있을 때만 저장
+                    newExamples.push({ user: u, bot: b });
+                }
+            });
+            globalData.prompt.chatExamples = newExamples;
+
+            // LocalStorage 업데이트
             localStorage.setItem('storyData', JSON.stringify(globalData));
         }
 
-        function goPage(url) {
-            saveData();
+        // [공통] JSON 파일 불러오기 (헤더 버튼용)
+        function loadJsonFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const json = JSON.parse(e.target.result);
+                    globalData = { ...globalData, ...json }; // 병합
+                    localStorage.setItem('storyData', JSON.stringify(globalData));
+                    applyDataToForm();
+                    alert('데이터를 불러왔습니다.');
+                } catch (err) { alert('파일 형식 오류'); }
+            };
+            reader.readAsText(file);
+        }
+
+        // [공통] JSON 파일 저장하기
+        function saveJsonFile() {
+            updateGlobalDataFromForm();
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(globalData, null, 2));
+            const node = document.createElement('a');
+            node.setAttribute("href", dataStr);
+            node.setAttribute("download", "story_data.json");
+            document.body.appendChild(node);
+            node.click();
+            node.remove();
+        }
+
+        // [공통] 페이지 이동 (저장 후 이동)
+        function saveAndGo(url) {
+            updateGlobalDataFromForm();
             location.href = url;
         }
     </script>
