@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>스탯 설정</title>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <style>
+        :root { --bg-color: #121212; --bg-secondary: #1e1e1e; --text-color: #ffffff; --accent-color: #ff4747; --border-color: #333; }
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Pretendard', sans-serif; }
+        body { background:var(--bg-color); color:var(--text-color); line-height:1.5; height:100vh; display:flex; flex-direction:column; }
+        .header-nav { background:var(--bg-secondary); padding:10px 20px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; }
+        .container { display:flex; flex:1; overflow:hidden; }
+        .left-panel { flex:1; padding:20px; border-right:1px solid var(--border-color); overflow-y:auto; max-width:50%; }
+        .right-panel { flex:1; background:#000; }
+        .input-box { width:100%; padding:10px; background:var(--bg-secondary); border:1px solid var(--border-color); color:#fff; border-radius:6px; margin-bottom:10px; }
+        .bottom-nav { padding:15px 20px; border-top:1px solid var(--border-color); background:var(--bg-secondary); display:flex; justify-content:space-between; }
+        .btn-prev { background:#333; color:white; padding:10px 20px; border:none; border-radius:6px; cursor:pointer; }
+        .btn-next { background:var(--accent-color); color:white; padding:10px 30px; border:none; border-radius:6px; cursor:pointer; }
+        .stat-card { background:#252525; padding:15px; border-radius:8px; margin-bottom:15px; border:1px solid #3d3d3d; }
+    </style>
+</head>
+<body>
+    <header class="header-nav">
+        <div style="font-weight:bold;">← 스토리 만들기 (스탯 설정)</div>
+    </header>
+
+    <div class="container">
+        <aside class="left-panel">
+            <h3>스탯 설정</h3>
+            <p style="font-size:0.8rem; color:#888; margin-bottom:20px;">예시로 1개의 스탯만 보여집니다.</p>
+
+            <div class="stat-card">
+                <label>스탯 이름</label>
+                <input type="text" id="statName" class="input-box" placeholder="예) 호감도">
+                
+                <label>최소 / 최대 / 기본값</label>
+                <div style="display:flex; gap:5px;">
+                    <input type="number" id="statMin" class="input-box" placeholder="최소">
+                    <input type="number" id="statMax" class="input-box" placeholder="최대">
+                    <input type="number" id="statDefault" class="input-box" placeholder="기본">
+                </div>
+            </div>
+        </aside>
+        <main class="right-panel"></main>
+    </div>
+
+    <footer class="bottom-nav">
+        <button class="btn-prev" onclick="goPage('start_setting.html')">이전</button>
+        <button class="btn-next" onclick="goPage('media_setting.html')">다음</button>
+    </footer>
+
+    <script>
+        let globalData = {};
+        window.onload = function() {
+            const saved = localStorage.getItem('storyData');
+            if (saved) {
+                globalData = JSON.parse(saved);
+                loadStat();
+            }
+        };
+
+        function loadStat() {
+            // 첫 번째 파라미터가 있으면 불러오기 (예시)
+            if (globalData.prompt && globalData.prompt.parameters && globalData.prompt.parameters.length > 0) {
+                const param = globalData.prompt.parameters[0];
+                document.getElementById('statName').value = param.name || "";
+                document.getElementById('statMin').value = param.min || "";
+                document.getElementById('statMax').value = param.max || "";
+                document.getElementById('statDefault').value = param.defaultValue || "";
+            }
+        }
+
+        function saveData() {
+            if (!globalData.prompt) globalData.prompt = {};
+            // 파라미터 배열이 없으면 생성
+            if (!globalData.prompt.parameters) globalData.prompt.parameters = [];
+            
+            // 0번째 요소에 덮어쓰기 (단순화)
+            globalData.prompt.parameters[0] = {
+                name: document.getElementById('statName').value,
+                min: Number(document.getElementById('statMin').value),
+                max: Number(document.getElementById('statMax').value),
+                defaultValue: Number(document.getElementById('statDefault').value)
+            };
+            localStorage.setItem('storyData', JSON.stringify(globalData));
+        }
+
+        function goPage(url) {
+            saveData();
+            location.href = url;
+        }
+    </script>
+</body>
+</html>
