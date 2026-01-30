@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>시작 설정</title>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <style>
+        /* (2페이지와 동일한 CSS 코드) */
+        :root { --bg-color: #121212; --bg-secondary: #1e1e1e; --text-color: #ffffff; --text-muted: #a0a0a0; --accent-color: #ff4747; --border-color: #333333; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); line-height: 1.5; height: 100vh; display: flex; flex-direction: column; }
+        .header-nav { background: var(--bg-secondary); padding: 10px 20px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; font-size: 0.9rem; }
+        .nav-left { display: flex; align-items: center; }
+        .step-list { display: flex; gap: 20px; list-style: none; margin-left: 20px; }
+        .step-item { color: var(--text-muted); cursor: pointer; position: relative; }
+        .step-item.active { color: var(--accent-color); font-weight: bold; }
+        .step-item.active::after { content:''; position:absolute; bottom:-14px; left:0; width:100%; height:2px; background:var(--accent-color); }
+        .container { display: flex; flex: 1; overflow: hidden; }
+        .left-panel { flex: 1; padding: 20px; overflow-y: auto; border-right: 1px solid var(--border-color); max-width: 50%; }
+        .input-box, .textarea-box { width: 100%; background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-color); padding: 12px; border-radius: 6px; font-size: 0.95rem; }
+        .textarea-box { height: 120px; resize: vertical; }
+        .right-panel { flex: 1; background-color: #000; }
+        .bottom-nav { padding: 15px 20px; border-top: 1px solid var(--border-color); background: var(--bg-secondary); display: flex; justify-content: space-between; }
+        .btn-prev { background: #333; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+        .btn-next { background: var(--accent-color); color: white; border: none; padding: 10px 30px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .section-box { margin-bottom: 30px; }
+        .label-title { font-weight: bold; font-size: 1rem; margin-bottom:10px; display:block;}
+        .label-title span { color: var(--accent-color); }
+        .header-actions { display: flex; gap: 10px; }
+        .btn-header { padding: 5px 10px; font-size: 0.8rem; background: #333; border: 1px solid #555; color: #ccc; border-radius: 4px; cursor: pointer; }
+        .btn-header:hover { background: #444; color: #fff; }
+    </style>
+</head>
+<body>
+    <header class="header-nav">
+        <div class="nav-left">
+            <div style="font-weight:bold; font-size:1.1rem; margin-right:20px;">← 스토리 만들기</div>
+            <ul class="step-list">
+                <li class="step-item">프로필</li>
+                <li class="step-item">스토리 설정</li>
+                <li class="step-item active">시작 설정</li>
+                <li class="step-item">스탯 설정</li>
+            </ul>
+        </div>
+        <div class="header-actions">
+            <button class="btn-header" onclick="saveData()">💾 저장</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <aside class="left-panel">
+            <div class="section-box">
+                <span class="label-title">시작설정 이름 <span>*</span></span>
+                <input type="text" id="setName" class="input-box" value="기본 설정">
+            </div>
+
+            <div class="section-box">
+                <span class="label-title">프롤로그 (첫 메시지) <span>*</span></span>
+                <textarea id="prologue" class="textarea-box" placeholder="스토리의 시작 메시지를 입력하세요"></textarea>
+            </div>
+
+            <div class="section-box">
+                <span class="label-title">시작 상황</span>
+                <textarea id="situationPrompt" class="textarea-box" style="height:200px;" placeholder="AI에게 전달할 시작 상황 지문을 입력하세요"></textarea>
+            </div>
+
+            <div class="section-box">
+                <span class="label-title">플레이 가이드</span>
+                <textarea id="playGuide" class="textarea-box" placeholder="플레이어를 위한 안내사항"></textarea>
+            </div>
+        </aside>
+
+        <main class="right-panel"></main>
+    </div>
+
+    <footer class="bottom-nav">
+        <button class="btn-prev" onclick="goPage('story.html')">이전</button>
+        <button class="btn-next" onclick="goPage('stat_setting.html')">다음</button>
+    </footer>
+
+    <script>
+        let globalData = {};
+
+        window.onload = function() {
+            const saved = localStorage.getItem('storyData');
+            if (saved) {
+                globalData = JSON.parse(saved);
+                loadToForm();
+            }
+        };
+
+        function loadToForm() {
+            // startingSets 배열이 있고 내용이 있다면 첫 번째(0번) 세트 데이터를 불러옴
+            if (globalData.prompt && globalData.prompt.startingSets && globalData.prompt.startingSets.length > 0) {
+                const set = globalData.prompt.startingSets[0];
+                
+                if (set.name) document.getElementById('setName').value = set.name;
+                if (set.situationPrompt) document.getElementById('situationPrompt').value = set.situationPrompt;
+                if (set.playGuide) document.getElementById('playGuide').value = set.playGuide;
+                
+                // initialMessages는 배열이므로 첫 번째 요소를 문자열로 변환하여 넣음
+                if (set.initialMessages && set.initialMessages.length > 0) {
+                    document.getElementById('prologue').value = set.initialMessages[0];
+                }
+            }
+        }
+
+        function saveData() {
+            if (!globalData.prompt) globalData.prompt = {};
+            if (!globalData.prompt.startingSets) globalData.prompt.startingSets = [{}];
+
+            // 0번 세트에 저장
+            const set = globalData.prompt.startingSets[0];
+            set.name = document.getElementById('setName').value;
+            set.situationPrompt = document.getElementById('situationPrompt').value;
+            set.playGuide = document.getElementById('playGuide').value;
+            set.initialMessages = [document.getElementById('prologue').value];
+
+            localStorage.setItem('storyData', JSON.stringify(globalData));
+        }
+
+        function goPage(url) {
+            saveData();
+            location.href = url;
+        }
+    </script>
+</body>
+</html>
